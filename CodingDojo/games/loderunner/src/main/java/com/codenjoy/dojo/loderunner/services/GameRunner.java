@@ -42,6 +42,8 @@ import static com.codenjoy.dojo.services.settings.SimpleParameter.v;
 
 public class GameRunner extends AbstractGameType implements GameType {
 
+    public static final String CUSTOM_MAP_PATH = "Custom map path";
+
     private Level level;
 
     public GameRunner() {
@@ -97,12 +99,19 @@ public class GameRunner extends AbstractGameType implements GameType {
     }
 
     @Override
-    public void refresh() {
-        level.refresh(getMap());
+    public void quietTick(){
+        if (this.settings.changed()){
+            for (String param: this.settings.whatChanged()){
+                if (param.equalsIgnoreCase(CUSTOM_MAP_PATH)){
+                    level.refresh(this.getMap());
+                }
+            }
+            this.settings.changesReacted();
+        }
     }
 
     protected String getMap() {
-        String customMapPath = settings.<String>getParameter("Custom map path").getValue();
+        String customMapPath = settings.<String>getParameter(CUSTOM_MAP_PATH).getValue();
         if (StringUtils.isNotEmpty(customMapPath)) {
             return MapLoader.loadMapFromFile(customMapPath);
         } else {

@@ -93,12 +93,6 @@ public class AdminController {
         return gameService.getGame(gameName).getVersion();
     }
 
-    @RequestMapping(params = "refreshGame", method = RequestMethod.GET)
-    public String getRestart(@RequestParam("gameName") String gameName, HttpServletRequest request) {
-        gameService.getGame(gameName).refresh();
-        return getAdmin(request);
-    }
-
     @RequestMapping(params = "saveAll", method = RequestMethod.GET)
     public String saveAllGames(Model model, HttpServletRequest request) {
         saveService.saveAll();

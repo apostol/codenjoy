@@ -369,13 +369,6 @@
             </table>
         </form:form>
     </c:if>
-    <table class="admin-table" id="refresh">
-        <tr>
-            <td>
-                <a href="${ctx}/admin?refreshGame&gameName=${gameName}">Refresh game</a>.
-            </td>
-        </tr>
-    </table>
 
     <c:if test="${players != null || savedGames != null}">
         <form:form modelAttribute="adminSettings" action="admin" method="POST">
