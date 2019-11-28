@@ -12,8 +12,8 @@ mvc:
   control-servlet-path: /ws/*
 
 game:
-  save.auto: false
-  ai: true
+  save.auto: true
+  ai: false
   semifinal:
     enabled: false
     timeout: 900
