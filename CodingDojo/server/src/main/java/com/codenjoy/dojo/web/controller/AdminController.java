@@ -94,8 +94,9 @@ public class AdminController {
     }
 
     @RequestMapping(params = "refreshGame", method = RequestMethod.GET)
-    public void getRestart(@RequestParam("gameName") String gameName) {
+    public String getRestart(@RequestParam("gameName") String gameName, HttpServletRequest request) {
         gameService.getGame(gameName).refresh();
+        return getAdmin(request);
     }
 
     @RequestMapping(params = "saveAll", method = RequestMethod.GET)
