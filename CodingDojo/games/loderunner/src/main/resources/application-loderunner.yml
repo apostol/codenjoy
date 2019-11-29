@@ -27,9 +27,9 @@ game:
 board.save.ticks: 1
 
 registration:
-  opened: false
+  opened: true
   nickname:
-    allowed: true
+    allowed: false
   password:
     min-length: 8
     autogen-length: 8
