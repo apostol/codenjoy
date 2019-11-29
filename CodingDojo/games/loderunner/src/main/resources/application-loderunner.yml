@@ -4,7 +4,7 @@ server:
   port: 8080
 
 rest-sender:
-  pool-size: 100
+  pool-size: 150
 
 mvc:
   cache-period: 259200
