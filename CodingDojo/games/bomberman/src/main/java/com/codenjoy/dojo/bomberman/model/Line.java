@@ -24,7 +24,6 @@ package com.codenjoy.dojo.bomberman.model;
 
 
 import com.codenjoy.dojo.services.Point;
-import com.codenjoy.dojo.services.PointImpl;
 
 import java.util.LinkedList;
 import java.util.List;

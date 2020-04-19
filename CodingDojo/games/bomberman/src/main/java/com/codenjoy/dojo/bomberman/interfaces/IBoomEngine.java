@@ -1,4 +1,4 @@
-package com.codenjoy.dojo.bomberman.model;
+package com.codenjoy.dojo.bomberman.interfaces;
 
 /*-
  * #%L
@@ -23,20 +23,12 @@ package com.codenjoy.dojo.bomberman.model;
  */
 
 
-import com.codenjoy.dojo.services.Tickable;
-
+import com.codenjoy.dojo.bomberman.model.Blast;
+import com.codenjoy.dojo.services.Point;
 import java.util.List;
 
-public interface Walls extends Iterable<Wall>, Tickable {
-    void add(int x, int y);
+public interface IBoomEngine {
 
-    boolean itsMe(int x, int y);
+    List<Blast> boom(List<? extends Point> barriers, int boardSize, Point source, int radius);
 
-    <T extends Wall> List<T> subList(Class<T> filter);
-
-    void add(Wall wall);
-
-    Wall destroy(int x, int y);
-
-    Wall get(int x, int y);
 }

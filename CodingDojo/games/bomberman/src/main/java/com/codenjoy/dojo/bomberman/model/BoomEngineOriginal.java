@@ -24,13 +24,14 @@ package com.codenjoy.dojo.bomberman.model;
 
 
 import com.codenjoy.dojo.services.Point;
-import com.codenjoy.dojo.services.PointImpl;
 
 import java.util.LinkedList;
 import java.util.List;
 import static com.codenjoy.dojo.services.PointImpl.*;
+import com.codenjoy.dojo.bomberman.interfaces.IBoomEngine;
+import com.codenjoy.dojo.services.PointImpl;
 
-public class BoomEngineOriginal implements BoomEngine {
+public class BoomEngineOriginal implements IBoomEngine {
 
     private Hero bomberman;
 
@@ -42,12 +43,13 @@ public class BoomEngineOriginal implements BoomEngine {
     public List<Blast> boom(List<? extends Point> barriers, int boardSize, Point source, int radius) {
         List<Blast> blasts = new LinkedList<>();
 
-        add(barriers, boardSize, blasts, source.getX(), source.getY());
+        blasts.add(new Blast(source.getX(), source.getY(), bomberman));
+//        add(barriers, boardSize, blasts, source.getX(), source.getY(), radius);
 
         for (int dx = 1; dx <= radius; dx++) {
             int x = source.getX() + dx;
             int y = source.getY() + 0;
-            if (!add(barriers, boardSize, blasts, x, y)) {
+            if (!add(barriers, boardSize, blasts, x, y, radius)) {
                 break;
             }
         }
@@ -55,7 +57,7 @@ public class BoomEngineOriginal implements BoomEngine {
         for (int dx = -1; dx >= -radius; dx--) {
             int x = source.getX() + dx;
             int y = source.getY() + 0;
-            if (!add(barriers, boardSize, blasts, x, y)) {
+            if (!add(barriers, boardSize, blasts, x, y, radius)) {
                 break;
             }
         }
@@ -64,7 +66,7 @@ public class BoomEngineOriginal implements BoomEngine {
             int x = source.getX() + 0;
             int y = source.getY() + dy;
 
-            if (!add(barriers, boardSize, blasts, x, y)) {
+            if (!add(barriers, boardSize, blasts, x, y, radius)) {
                 break;
             }
         }
@@ -73,7 +75,7 @@ public class BoomEngineOriginal implements BoomEngine {
             int x = source.getX() + 0;
             int y = source.getY() + dy;
 
-            if (!add(barriers, boardSize, blasts, x, y)) {
+            if (!add(barriers, boardSize, blasts, x, y, radius)) {
                 break;
             }
         }
@@ -81,20 +83,24 @@ public class BoomEngineOriginal implements BoomEngine {
         return blasts;
     }
 
-    private boolean add(List<? extends Point> barriers, int boardSize, List<Blast> blasts, int x, int y) {
+    private boolean add(List<? extends Point> barriers, int boardSize, List<Blast> blasts, int x, int y, int radius) {
         Point pt = pt(x, y);
 
         if (!isOnBoard(pt, boardSize)) {
             return false;
         }
-
-        if (barriers.contains(pt)) {
-            if (!barriers.get(barriers.indexOf(pt)).getClass().equals(Wall.class)) {    // TODO немного жвачка
+        int index = barriers.indexOf(pt);
+        if (index>-1) {
+            if (!barriers.get(index).getClass().equals(Wall.class)) {   //Стена
+                if (barriers.get(index).getClass().equals(Bomb.class)) {    //Детанация
+                    barriers.remove(index);
+                    blasts.addAll(boom(barriers, boardSize, pt, radius));
+                    return false;
+                }
                 blasts.add(new Blast(x, y, bomberman));
             }
             return false;
         }
-
         blasts.add(new Blast(x, y, bomberman));
         return true;
     }

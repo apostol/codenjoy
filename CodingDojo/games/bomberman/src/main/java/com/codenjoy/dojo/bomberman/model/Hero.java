@@ -22,89 +22,62 @@ package com.codenjoy.dojo.bomberman.model;
  * #L%
  */
 
-
 import com.codenjoy.dojo.services.Dice;
 import com.codenjoy.dojo.services.Direction;
-import com.codenjoy.dojo.services.PointImpl;
+import com.codenjoy.dojo.services.Point;
 import com.codenjoy.dojo.services.State;
 import com.codenjoy.dojo.services.multiplayer.PlayerHero;
-
 import static com.codenjoy.dojo.bomberman.model.Elements.*;
+import com.codenjoy.dojo.bomberman.interfaces.*;
 
-public class Hero extends PlayerHero<Field> implements State<Elements, Player> {
+import java.util.List;
+
+public class Hero extends PlayerHero<IField> implements State<Elements, Player> {
 
     private static final boolean WITHOUT_MEAT_CHOPPER = false;
-    private Level level;
+    private ILevel level;
     private Dice dice;
     private boolean alive;
     private boolean bomb;
     private Direction direction;
 
-    public Hero(Level level, Dice dice) {
+    public Hero(IField field) {
         super(-1, -1);
-        this.level = level;
-        this.dice = dice;
+        this.level = field.getLevel();
+        this.dice = field.getLevel().getDice();
         alive = true;
         direction = null;
+        init(field);
     }
 
-    public void init(Field field) {
+    public void init(IField field) {
         super.init(field);
-        int count = 0;
-        do {
-            move(dice.next(field.size()), dice.next(field.size()));
-            while (isBusy(x, y) && !isOutOfBoard(x, y)) {
-                x++;
-                if (isBusy(x, y)) {
-                    y++;
-                }
-            }
-        } while ((isBusy(x, y) || isOutOfBoard(x, y)) && count++ < 1000);
-
-        if (count >= 1000) {
-            throw new  RuntimeException("Dead loop at MyBomberman.init(Board)!");
-        }
-    }
-
-    private boolean isBusy(int x, int y) {
-        for (Hero bomberman : field.getBombermans()) {
-            if (bomberman != null && bomberman.itsMe(this) && bomberman != this) {
-                return true;
-            }
-        }
-
-        return field.getWalls().itsMe(x, y);
-    }
-
-    private boolean isOutOfBoard(int x, int y) {
-        return x >= field.size() || y >= field.size() || x < 0 || y < 0;
+        List<Point> free = field.getFreeCells();
+        Point position = free.remove(dice.next(free.size()));
+        move(position.getX(), position.getY());
     }
 
     @Override
     public void right() {
         if (!alive) return;
-
         direction = Direction.RIGHT;
     }
 
     @Override
     public void down() {
         if (!alive) return;
-
         direction = Direction.DOWN;
     }
 
     @Override
     public void up() {
         if (!alive) return;
-
         direction = Direction.UP;
     }
 
     @Override
     public void left() {
         if (!alive) return;
-
         direction = Direction.LEFT;
     }
 
@@ -121,19 +94,16 @@ public class Hero extends PlayerHero<Field> implements State<Elements, Player> {
 
     public void apply() {
         if (!alive) return;
-
         if (direction == null) {
             return;
         }
 
         int newX = direction.changeX(x);
         int newY = direction.changeY(y);
-
         if (!field.isBarrier(newX, newY, WITHOUT_MEAT_CHOPPER)) {
             move(newX, newY);
         }
         direction = null;
-
         if (bomb) {
             setBomb(x, y);
             bomb = false;
@@ -141,8 +111,8 @@ public class Hero extends PlayerHero<Field> implements State<Elements, Player> {
     }
 
     private void setBomb(int bombX, int bombY) {
-        if (field.getBombs(this).size() < level.bombsCount()) {
-            field.drop(new Bomb(this, bombX, bombY, level.bombsPower(), field));
+        if (field.getBombs(this).size() < level.getBombsCountParameter().getValue()) {
+            field.drop(new Bomb(this, bombX, bombY, level.getBombsPowerParameter().getValue(), field));
         }
     }
 
@@ -190,6 +160,26 @@ public class Hero extends PlayerHero<Field> implements State<Elements, Player> {
     @Override
     public void tick() {
 
+    }
+
+    @Override
+    public int getX() {
+        return this.x;
+    }
+
+    @Override
+    public int getY() {
+        return this.y;
+    }
+
+    @Override
+    public void setX(int x) {
+        this.x = x;
+    }
+
+    @Override
+    public void setY(int y) {
+        this.y = y;
     }
 }
 

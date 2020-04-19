@@ -26,11 +26,10 @@ package com.codenjoy.dojo.bomberman.services;
 import com.codenjoy.dojo.bomberman.client.Board;
 import com.codenjoy.dojo.bomberman.client.ai.AISolver;
 import com.codenjoy.dojo.bomberman.model.*;
+import com.codenjoy.dojo.bomberman.interfaces.*;
 import com.codenjoy.dojo.client.ClientBoard;
 import com.codenjoy.dojo.client.Solver;
 import com.codenjoy.dojo.services.*;
-import com.codenjoy.dojo.services.multiplayer.GameField;
-import com.codenjoy.dojo.services.multiplayer.GamePlayer;
 import com.codenjoy.dojo.services.multiplayer.MultiplayerType;
 import com.codenjoy.dojo.services.printer.CharElements;
 import com.codenjoy.dojo.services.settings.Parameter;
@@ -38,26 +37,26 @@ import com.codenjoy.dojo.services.settings.Parameter;
 public class GameRunner extends AbstractGameType implements GameType {
 
     public static final String GAME_NAME = "bomberman";
-    private GameSettings gameSettings;
+    private final ILevel level;
 
     public GameRunner() {
-        gameSettings = getGameSettings();
         new Scores(0, settings); // TODO сеттринги разделены по разным классам, продумать архитектуру
+        level = new LevelImpl(settings, getDice());
     }
 
     @Override
     public PlayerScores getPlayerScores(Object score) {
-        return new Scores((Integer)score, settings);
+        return new Scores((Integer) score, settings);
     }
 
     @Override
-    public GameField createGame(int levelNumber) {
-        return new Bomberman(gameSettings);
+    public IField createGame(int levelNumber) {
+        return new Bomberman(level);
     }
 
     @Override
     public Parameter<Integer> getBoardSize() {
-        return gameSettings.getBoardSize();
+        return level.getBoardSizeParameter();
     }
 
     @Override
@@ -82,15 +81,16 @@ public class GameRunner extends AbstractGameType implements GameType {
 
     @Override
     public MultiplayerType getMultiplayerType() {
-        return MultiplayerType.MULTIPLE;
+        return level.getGameType();
     }
 
     @Override
-    public GamePlayer createPlayer(EventListener listener, String playerName) {
+    public Player createPlayer(EventListener listener, String playerName) {
         return new Player(listener);
     }
 
-    protected GameSettings getGameSettings() {
-        return new OptionGameSettings(settings, getDice());
+    @Override
+    public void quietTick(){
+        level.tick(); //обновление конфигурации уровня
     }
 }

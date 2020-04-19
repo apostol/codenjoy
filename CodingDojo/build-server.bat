@@ -1,6 +1,6 @@
 set ROOT=%CD%
 
-set GAMES_TO_RUN=tetris,snake,bomberman
+set GAMES_TO_RUN=bomberman
 
 IF "%GAMES_TO_RUN%"=="" (
     call %ROOT%\mvnw clean install -DskipTests

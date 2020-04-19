@@ -26,11 +26,13 @@ package com.codenjoy.dojo.bomberman.model;
 import com.codenjoy.dojo.bomberman.services.Events;
 import com.codenjoy.dojo.services.EventListener;
 import com.codenjoy.dojo.services.multiplayer.GamePlayer;
+import com.codenjoy.dojo.bomberman.interfaces.IField;
+import com.codenjoy.dojo.bomberman.interfaces.IGameSettings;
 
-public class Player extends GamePlayer<Hero, Field> {
+
+public class Player extends GamePlayer<Hero, IField> {
 
     private Hero hero;
-    private GameSettings settings;
 
     public Player(EventListener listener) {
         super(listener);
@@ -50,14 +52,14 @@ public class Player extends GamePlayer<Hero, Field> {
         if (event == Events.KILL_BOMBERMAN) {
             hero.kill();
         }
-
         super.event(event);
     }
 
 
-    public void newHero(Field board) {
-        settings = board.getSettings();
-        hero = settings.getBomberman(settings.getLevel());
+    public void newHero(IField board) {
+        //settings = board.getSettings();
+        //settings.getBomberman(settings.getLevel());
+        hero = new Hero(board);
         hero.init(board);
     }
 }

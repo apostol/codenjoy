@@ -34,8 +34,28 @@ public class DestroyWall extends Wall implements State<Elements, Player> {
     }
 
     @Override
+    public int getX() {
+        return this.x;
+    }
+
+    @Override
+    public int getY() {
+        return this.y;
+    }
+
+    @Override
     public Wall copy() {
         return new DestroyWall(this.x, this.y);
+    }
+
+    @Override
+    public void setX(int x) {
+        this.x = x;
+    }
+
+    @Override
+    public void setY(int y) {
+        this.y = y;
     }
 
     @Override

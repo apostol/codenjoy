@@ -1,4 +1,4 @@
-package com.codenjoy.dojo.bomberman.model;
+package com.codenjoy.dojo.bomberman.interfaces;
 
 /*-
  * #%L
@@ -22,19 +22,19 @@ package com.codenjoy.dojo.bomberman.model;
  * #L%
  */
 
+import com.codenjoy.dojo.services.multiplayer.MultiplayerType;
+import com.codenjoy.dojo.services.settings.Parameter;
+import com.codenjoy.dojo.services.Dice;
 
-/**
- * User: oleksandr.baglai
- * Date: 3/8/13
- * Time: 8:17 PM
- */
-public class DestroyWalls extends WallsDecorator implements Walls {
+public interface IGameSettings {
+  MultiplayerType getGameType();
+  Parameter<Integer> getBoardSizeParameter();
+  Parameter<String> getCurrentMapParameter();
+  Parameter<String> getGameTypeParameter();
+  Parameter<Integer> getBombsPowerParameter();
+  Parameter<Integer> getBombsCountParameter();
 
-    public DestroyWalls(Walls walls) {
-        super(new WallsImpl());
-        for (Wall wall : walls) {
-            this.walls.add(new DestroyWall(wall.getX(), wall.getY()));
-        }
-    }
+  void setBoardSizeParameter(int size);
+  Dice getDice();
 
 }

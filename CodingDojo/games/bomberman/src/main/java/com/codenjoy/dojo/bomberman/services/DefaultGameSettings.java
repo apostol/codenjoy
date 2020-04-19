@@ -22,58 +22,37 @@ package com.codenjoy.dojo.bomberman.services;
  * #L%
  */
 
-
-import com.codenjoy.dojo.bomberman.model.*;
+import com.codenjoy.dojo.bomberman.interfaces.*;
 import com.codenjoy.dojo.services.Dice;
-import com.codenjoy.dojo.services.RandomDice;
 import com.codenjoy.dojo.services.settings.Parameter;
 
-import static com.codenjoy.dojo.services.settings.SimpleParameter.v;
+public abstract class DefaultGameSettings implements IGameSettings {
 
-public class DefaultGameSettings implements GameSettings {
-
-    public static int MEAT_CHOPPERS_COUNT = 10;
+    public static int MEAT_CHOPPERS_COUNT = 1;
     public static int BOMB_POWER = 3;
-    public static int BOMBS_COUNT = 1;
-    public static int BOARD_SIZE = 33;
+    public static int BOMBS_COUNT = 5;
+    public static int BOARD_SIZE = 10;
     public static int DESTROY_WALL_COUNT = BOARD_SIZE * BOARD_SIZE / 10;
-    
-    private final Dice dice;
+    public static int PLAYERS_PER_FIELD = 2;
+    public static String CURRENT_FIELD_MAP = "";
+    public static String GAME_TYPE = "TEAM";
+    protected final Dice dice;
+
+    public static String CURRENT_FIELD_MAP_PARAM = "Current field map";
+    public static String MEAT_CHOPPERS_COUNT_PARAM = "Meat choppers count";
+    public static String BOMB_POWER_PARAM = "Bomb power";
+    public static String BOMBS_COUNT_PARAM = "Bombs count";
+    public static String BOARD_SIZE_PARAM = "Board size";
+    public static String DESTROY_WALL_COUNT_PARAM = "Destroy wall count";
+    public static String PLAYERS_PER_FIELD_PARAM = "Players per field";
+    public static String GAME_TYPE_PARAM = "Game type";
 
     public DefaultGameSettings(Dice dice) {
         this.dice = dice;
     }
 
-    @Override
-    public Level getLevel() {
-        return new Level() {
-            @Override
-            public int bombsCount() {
-                return BOMBS_COUNT;
-            }
-
-            @Override
-            public int bombsPower() {
-                return BOMB_POWER;
-            }
-        };
+    public Dice getDice(){
+        return dice;
     }
 
-    @Override
-    public Walls getWalls(Bomberman board) {
-        OriginalWalls originalWalls = new OriginalWalls(v(BOARD_SIZE));
-        MeatChoppers meatChoppers = new MeatChoppers(originalWalls, board, v(MEAT_CHOPPERS_COUNT), dice);
-        EatSpaceWalls eatWalls = new EatSpaceWalls(meatChoppers, board, v(DESTROY_WALL_COUNT), dice);
-        return eatWalls;
-    }
-
-    @Override
-    public Hero getBomberman(Level level) {
-        return new Hero(level, dice);
-    }
-
-    @Override
-    public Parameter<Integer> getBoardSize() {
-        return v(BOARD_SIZE);
-    }
 }

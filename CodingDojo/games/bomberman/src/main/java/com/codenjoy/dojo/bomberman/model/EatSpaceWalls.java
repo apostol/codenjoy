@@ -22,75 +22,95 @@ package com.codenjoy.dojo.bomberman.model;
  * #L%
  */
 
-
 import com.codenjoy.dojo.services.Dice;
+import com.codenjoy.dojo.services.Point;
 import com.codenjoy.dojo.services.settings.Parameter;
+import com.codenjoy.dojo.bomberman.interfaces.IField;
 
+import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 
-public class EatSpaceWalls extends WallsDecorator implements Walls { // TODO протестить класс
+public class EatSpaceWalls implements Iterable<DestroyWall> {
 
     private static final boolean WITH_MEAT_CHOPPERS = true;
-
-    private Field board;
     private Parameter<Integer> count;
     private Dice dice;
+    private final LinkedList<DestroyWall> destroyWalls = new LinkedList<>();;
 
-    public EatSpaceWalls(Walls walls, Field board, Parameter<Integer> count, Dice dice) {
-        super(walls);
-        this.board = board;
+
+    public EatSpaceWalls(Parameter<Integer> count, Dice dice) {
         this.count = count;
         this.dice = dice;
     }
 
-    private int freeSpaces() {
-        return  (board.size()*board.size() - 1) // TODO -1 это один бомбер, а если их несколько?
-                - walls.subList(Wall.class).size();
+    // private int freeSpaces() {
+    //     return (board.size() * board.size() - 1) // TODO -1 это один бомбер, а если их несколько?
+    //             - walls.subList(Wall.class).size();
+    // }
+
+    public void tick(IField board) {
+        regenerate(board);
     }
 
-    @Override
-    public void tick() {
-        super.tick();    // TODO протестить эту строчку
-
-        regenerate();
-    }
-
-    private void regenerate() {
+    private void regenerate(IField board) {
         if (count.getValue() < 0) {
             count.update(0);
         }
-
-        List<DestroyWall> destroyWalls = walls.subList(DestroyWall.class);
-        int needToCreate = this.count.getValue() - destroyWalls.size();
-        if (needToCreate > freeSpaces()) {  // TODO и это потестить
-            count.update(count.getValue() - (needToCreate - freeSpaces()) - 50); // 50 это место под бомберов
-        }
-
         int count = destroyWalls.size();
-        if (count > this.count.getValue()) { // TODO и удаление лишних
-            for (int i = 0; i < (count - this.count.getValue()); i++) {
-                DestroyWall meatChopper = destroyWalls.remove(0);
-                walls.destroy(meatChopper.getX(), meatChopper.getY());
-            }
-            return;
+        List<Point> free = board.getFreeCells();
+
+        while (count < this.count.getValue()) {
+            Point position = free.remove(dice.next(free.size()));
+            destroyWalls.add(new DestroyWall(position.getX(), position.getY()));
+            count++;
         }
 
-        int c = 0;
-        int maxc = 10000;
-        while (count < this.count.getValue() && c < maxc) {  // TODO и это
-            int x = dice.next(board.size());
-            int y = dice.next(board.size());
+        // if (needToCreate > free.size()) { // TODO и это потестить
+        //     count.update(count.getValue() - (needToCreate - freeSpaces()) - 50); // 50 это место под бомберов
+        // }
 
-            if (!board.isBarrier(x, y, WITH_MEAT_CHOPPERS)) {
-                walls.add(new DestroyWall(x, y));
-                count++;
-            }
+        // if (count > this.count.getValue()) { // TODO и удаление лишних
+        //     for (int i = 0; i < (count - this.count.getValue()); i++) {
+        //         DestroyWall meatChopper = destroyWalls.remove(0);
+        //         walls.destroy(meatChopper.getX(), meatChopper.getY());
+        //     }
+        //     return;
+        // }
 
-            c++;
-        }
+        // int c = 0;
+        // int maxc = 10000;
+        // while (count < this.count.getValue() && c < maxc) { // TODO и это
+        //     int x = dice.next(board.size());
+        //     int y = dice.next(board.size());
 
-        if (c == maxc) {
-            throw new  RuntimeException("Dead loop at EatSpaceWalls.generate!");
-        }
+        //     if (!board.isBarrier(x, y, WITH_MEAT_CHOPPERS)) {
+        //         walls.add(new DestroyWall(x, y));
+        //         count++;
+        //     }
+
+        //     c++;
+        // }
+
+        // if (c == maxc) {
+        //     throw new RuntimeException("Dead loop at EatSpaceWalls.generate!");
+        // }
     }
+
+    @Override
+    public Iterator<DestroyWall> iterator() {
+        return destroyWalls.iterator();
+    }
+
+	public void clear() {
+        destroyWalls.clear();
+	}
+
+	public boolean itsMe(int x, int y) {
+        return destroyWalls.stream().anyMatch(r->r.itsMe(x, y));
+	}
+
+	public List<DestroyWall> getList() {
+		return destroyWalls;
+	}
 }

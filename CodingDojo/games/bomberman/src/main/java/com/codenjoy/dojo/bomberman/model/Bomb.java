@@ -1,5 +1,4 @@
 package com.codenjoy.dojo.bomberman.model;
-
 /*-
  * #%L
  * Codenjoy - it's a dojo-like platform from developers to developers.
@@ -26,15 +25,16 @@ package com.codenjoy.dojo.bomberman.model;
 import com.codenjoy.dojo.services.PointImpl;
 import com.codenjoy.dojo.services.State;
 import com.codenjoy.dojo.services.Tickable;
+import com.codenjoy.dojo.bomberman.interfaces.IField;
 
 public class Bomb extends PointImpl implements Tickable, State<Elements, Player> {
     protected int timer = 5;
     protected int power;
     private Hero owner;
-    private Field field;
+    private IField field;
 
-    public Bomb(Hero owner, int x, int y, int power, Field field) {
-        super(x, y);
+    public Bomb(Hero owner, int x, int y, int power, IField field) {
+        super(pt(x, y));
         this.power = power;
         this.owner = owner;
         this.field = field;
@@ -47,7 +47,7 @@ public class Bomb extends PointImpl implements Tickable, State<Elements, Player>
         }
     }
 
-    private void boom() {
+    public void boom() {
         field.removeBomb(this);
     }
 
@@ -81,5 +81,25 @@ public class Bomb extends PointImpl implements Tickable, State<Elements, Player>
             case 5 : return Elements.BOMB_TIMER_5;
             default : return Elements.BOOM;
         }
+    }
+
+    @Override
+    public int getX() {
+        return this.x;
+    }
+
+    @Override
+    public int getY() {
+        return this.y;
+    }
+
+    @Override
+    public void setX(int x) {
+        this.x = x;
+    }
+
+    @Override
+    public void setY(int y) {
+        this.y = y;
     }
 }

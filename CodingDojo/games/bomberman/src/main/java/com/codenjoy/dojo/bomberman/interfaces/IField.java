@@ -1,4 +1,4 @@
-package com.codenjoy.dojo.bomberman.model;
+package com.codenjoy.dojo.bomberman.interfaces;
 
 /*-
  * #%L
@@ -22,31 +22,25 @@ package com.codenjoy.dojo.bomberman.model;
  * #L%
  */
 
-
+import com.codenjoy.dojo.bomberman.model.*;
 import com.codenjoy.dojo.services.multiplayer.GameField;
+import com.codenjoy.dojo.services.Dice;
+import com.codenjoy.dojo.services.Point;
 
 import java.util.List;
 
-public interface Field extends GameField<Player> {  // TODO применить тут ISP (все ли методы должны быть паблик?)
+public interface IField extends GameField<Player> {  // TODO применить тут ISP (все ли методы должны быть паблик?)
     int size();
 
     List<Hero> getBombermans();
-
-    List<Bomb> getBombs();
-
-    List<Bomb> getBombs(Hero bomberman);
-
-    Walls getWalls();
-
-    boolean isBarrier(int x, int y, boolean isWithMeatChopper);
-
-    void remove(Player player);
-
+    List<Bomb> getBombs(); //список бомб
+    List<Bomb> getBombs(Hero bomberman); //список бомб конкретного игрока
+    List<Wall> getWalls(); //список неуничтожаемых стен
+    List<DestroyWall> getDestroyWall(); //список уничтожаемых стен
+    boolean isBarrier(int x, int y, boolean isWithMeatChopper); //проверка на ВСЕ препятствия
     List<Blast> getBlasts();
-
     void drop(Bomb bomb);
-
     void removeBomb(Bomb bomb);
-
-    GameSettings getSettings();
+    List<Point> getFreeCells();
+    ILevel getLevel();
 }

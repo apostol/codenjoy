@@ -1,5 +1,7 @@
 package com.codenjoy.dojo.bomberman.services;
 
+import com.codenjoy.dojo.bomberman.interfaces.IGameSettings;
+
 /*-
  * #%L
  * Codenjoy - it's a dojo-like platform from developers to developers.
@@ -22,62 +24,105 @@ package com.codenjoy.dojo.bomberman.services;
  * #L%
  */
 
-
-import com.codenjoy.dojo.bomberman.model.*;
 import com.codenjoy.dojo.services.Dice;
-import com.codenjoy.dojo.services.RandomDice;
+import com.codenjoy.dojo.services.multiplayer.MultiplayerType;
 import com.codenjoy.dojo.services.settings.Parameter;
 import com.codenjoy.dojo.services.settings.Settings;
 
-public class OptionGameSettings implements GameSettings {
+import java.util.Arrays;
+import java.util.List;
 
-    private final Parameter<Integer> bombPower;
-    private final Parameter<Integer> bombsCount;
-    private final Parameter<Integer> destroyWallCount;
-    private final Parameter<Integer> boardSize;
-    private final Parameter<Integer> meatChoppersCount;
-    private Dice dice;
+public abstract class OptionGameSettings extends DefaultGameSettings {
 
+    protected final Parameter<Integer> bombPower;
+    protected final Parameter<Integer> bombsCount;
+    protected final Parameter<Integer> boardSize;
+    protected final Parameter<Integer> playersPerField;
+    protected final Parameter<String>  gameType;
+    protected final Parameter<Integer> meatChoppersCount;
+    protected final Parameter<Integer> destroyWallCount;
+    protected final Parameter<String>  currentMap;
+    protected Settings settings;
+ 
     public OptionGameSettings(Settings settings, Dice dice) {
-        bombsCount = settings.addEditBox("Bombs count").type(Integer.class).def(1);
-        bombPower = settings.addEditBox("Bomb power").type(Integer.class).def(DefaultGameSettings.BOMB_POWER);
-        boardSize = settings.addEditBox("Board size").type(Integer.class).def(DefaultGameSettings.BOARD_SIZE);
-        destroyWallCount = settings.addEditBox("Destroy wall count").type(Integer.class).def(boardSize.getValue()*boardSize.getValue()/10);
-        meatChoppersCount = settings.addEditBox("Meat choppers count").type(Integer.class).def(DefaultGameSettings.MEAT_CHOPPERS_COUNT);
-        this.dice = dice;
+        super(dice);
+        this.settings = settings;
+        this.bombsCount = settings.addEditBox(DefaultGameSettings.BOMBS_COUNT_PARAM).type(Integer.class).def(DefaultGameSettings.BOMBS_COUNT);
+        this.bombPower = settings.addEditBox(DefaultGameSettings.BOMB_POWER_PARAM).type(Integer.class).def(DefaultGameSettings.BOMB_POWER);
+        this.boardSize = settings.addEditBox(DefaultGameSettings.BOARD_SIZE_PARAM).type(Integer.class).def(DefaultGameSettings.BOARD_SIZE);
+        this.destroyWallCount = settings.addEditBox(DefaultGameSettings.DESTROY_WALL_COUNT_PARAM).type(Integer.class).def(boardSize.getValue()*boardSize.getValue()/10);
+        this.meatChoppersCount = settings.addEditBox(DefaultGameSettings.MEAT_CHOPPERS_COUNT_PARAM).type(Integer.class).def(DefaultGameSettings.MEAT_CHOPPERS_COUNT);
+        this.playersPerField = settings.addEditBox(DefaultGameSettings.PLAYERS_PER_FIELD_PARAM).type(Integer.class).def(DefaultGameSettings.PLAYERS_PER_FIELD);
+        this.gameType = settings.addSelect(DefaultGameSettings.GAME_TYPE_PARAM, Arrays.asList("MULTIPLAYER", "TEAM")).type(String.class).def(DefaultGameSettings.GAME_TYPE);
+        this.currentMap = settings.addEditBox(DefaultGameSettings.CURRENT_FIELD_MAP_PARAM).type(String.class).def(DefaultGameSettings.CURRENT_FIELD_MAP);
     }
 
-    @Override
-    public Level getLevel() {
-        return new Level() {
-            @Override
-            public int bombsCount() {
-                return bombsCount.getValue();
+    public MultiplayerType getGameType(){
+        switch (gameType.getValue()){
+            case "MULTIPLAYER":
+                return MultiplayerType.MULTIPLE;
+            case "TEAM": {
+                return MultiplayerType.TEAM.apply(this.playersPerField.getValue(), !MultiplayerType.DISPOSABLE);
             }
-
-            @Override
-            public int bombsPower() {
-                return bombPower.getValue();
-            }
-        };
+            default:
+                return MultiplayerType.MULTIPLE; //все на одной карте
+        }
     }
 
     @Override
-    public Walls getWalls(Bomberman board) {
-        OriginalWalls originalWalls = new OriginalWalls(boardSize);
-        MeatChoppers meatChoppers = new MeatChoppers(originalWalls, board, meatChoppersCount, dice);
-
-        EatSpaceWalls eatWalls = new EatSpaceWalls(meatChoppers, board, destroyWallCount, dice);
-        return eatWalls;
+    public Parameter<String> getGameTypeParameter() {
+        return gameType;
     }
 
     @Override
-    public Hero getBomberman(Level level) {
-        return new Hero(level, dice);
+    public Parameter<String> getCurrentMapParameter(){  return this.currentMap; }
+
+    public void setBoardSizeParameter(int size){
+        boardSize.update(size);
     }
 
     @Override
-    public Parameter<Integer> getBoardSize() {
+    public Parameter<Integer> getBoardSizeParameter() {
         return boardSize;
     }
+
+    @Override
+    public Parameter<Integer> getBombsPowerParameter() {
+        return bombPower;
+    }
+
+    @Override
+    public Parameter<Integer> getBombsCountParameter() {
+        return bombsCount;
+    }
+
+
+
+    // @Override
+    // public ILevel getLevel() {
+    //     return new Level() {
+    //         @Override
+    //         public int bombsCount() {
+    //             return bombsCount.getValue();
+    //         }
+
+    //         @Override
+    //         public int bombsPower() {
+    //             return bombPower.getValue();
+    //         }
+    //     };
+    // }
+
+    // @Override
+    // public Walls getWalls(Bomberman board) {
+    //     OriginalWalls originalWalls = new OriginalWalls(boardSize);
+    //     MeatChoppers meatChoppers = new MeatChoppers(originalWalls, board, meatChoppersCount, dice);
+    //     EatSpaceWalls eatWalls = new EatSpaceWalls(meatChoppers, board, destroyWallCount, dice);
+    //     return eatWalls;
+    // }
+
+    // @Override
+    // public Hero getBomberman(Level level) {
+    //     return new Hero(level, dice);
+    // }
 }

@@ -1,4 +1,4 @@
-package com.codenjoy.dojo.bomberman.model;
+package com.codenjoy.dojo.bomberman.interfaces;
 
 /*-
  * #%L
@@ -22,14 +22,21 @@ package com.codenjoy.dojo.bomberman.model;
  * #L%
  */
 
-
-import com.codenjoy.dojo.services.Point;
-import com.codenjoy.dojo.services.PointImpl;
-
 import java.util.List;
 
-public interface BoomEngine {
+import com.codenjoy.dojo.bomberman.model.EatSpaceWalls;
+import com.codenjoy.dojo.bomberman.model.MeatChoppers;
+import com.codenjoy.dojo.bomberman.model.Wall;
+import com.codenjoy.dojo.services.settings.Parameter;
 
-    List<Blast> boom(List<? extends Point> barriers, int boardSize, Point source, int radius);
+
+public interface ILevel extends IGameSettings {
+    int getSize();
+    List<Wall> getWalls();
+    void tick();
+	MeatChoppers getMeatChoppers();
+	EatSpaceWalls getEatSpacesWalls();
+  boolean isChanged(); //обновился ли уровень?
+  void changesReacted(); //Учли обновление
 
 }

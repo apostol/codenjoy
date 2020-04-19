@@ -22,56 +22,88 @@ package com.codenjoy.dojo.bomberman.model;
  * #L%
  */
 
-
 import com.codenjoy.dojo.bomberman.services.Events;
 import com.codenjoy.dojo.services.printer.BoardReader;
 import com.codenjoy.dojo.services.Point;
-import com.codenjoy.dojo.services.settings.Parameter;
+import com.codenjoy.dojo.bomberman.interfaces.IField;
+import com.codenjoy.dojo.bomberman.interfaces.ILevel;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Optional;
 
 import static com.codenjoy.dojo.services.PointImpl.pt;
+import static java.util.stream.Collectors.toList;
 
-public class Bomberman implements Field {
+public class Bomberman implements IField {
 
     private List<Player> players = new LinkedList<>();
-
-    private Walls walls;
-    private Parameter<Integer> size;
+    private MeatChoppers meatChoppers;
+    private EatSpaceWalls eatSpacesWalls;
     private List<Bomb> bombs;
-    private List<Blast> blasts;
-    private GameSettings settings;
-    private List<Point> destroyedWalls;
-    private List<Bomb> destroyedBombs;
+    private List<Blast> blasts; // список взрывов - длительность 1 тик.
+    private List<Wall> destroyedWalls; // список стен, которые уничтожены - длительность 1 тик
+    private List<Bomb> destroyedBombs; // список уничтоженных бомб - длительность 1 тик
+    private ILevel level;
+    private final LinkedList<Point> map = new LinkedList<>();
 
-    public Bomberman(GameSettings settings) {
-        this.settings = settings;
-        bombs = new LinkedList<>();
-        blasts = new LinkedList<>();
-        destroyedWalls = new LinkedList<>();
-        destroyedBombs = new LinkedList<>();
-        size = settings.getBoardSize();
-        walls = settings.getWalls(this);  // TODO как-то красивее сделать
-    }
-
-    public GameSettings getSettings() {
-        return settings;
+    public Bomberman(ILevel level) {
+        this.level = level;
+        this.regenerate();
     }
 
     @Override
     public int size() {
-        return size.getValue();
+        return level.getSize();
+    }
+
+    private void regenerate() {
+        meatChoppers = level.getMeatChoppers();
+        meatChoppers.clear();
+
+        eatSpacesWalls = level.getEatSpacesWalls();
+        eatSpacesWalls.clear();
+
+        bombs = new LinkedList<>();
+        blasts = new LinkedList<>();
+        destroyedWalls = new LinkedList<>();
+        destroyedBombs = new LinkedList<>();
+    }
+
+    private void generateMap(){
+        map.clear();
+        map.addAll(getBombermans());
+        map.addAll(getWalls());
+        map.addAll(getMeatChoppers());
+        map.addAll(getEatSpacesWalls());
+        map.addAll(getBombs());
+        map.addAll(getBlasts());
     }
 
     @Override
     public void tick() {
-        removeBlasts();
-        tactAllBombermans();
-        meatChopperEatBombermans();
-        walls.tick();
-        meatChopperEatBombermans();
-        tactAllBombs();
+        if (level.isChanged()){
+            regenerate();
+            level.changesReacted();
+        }
+        blasts.clear(); //уберем бласт
+
+        destroyedWalls.forEach(dw->eatSpacesWalls.getList().remove(dw)); //убираем разрушенные стены
+        destroyedWalls.clear(); // уберем разрушенные стены
+
+        tactAllBombermans();//Бомберы переместились
+
+        meatChopperEatBombermans();//Мясник сожрал бомбера?
+
+        meatChoppers.tick(this); //Мясник переместился
+
+        eatSpacesWalls.tick(this); //Стенки обновились
+
+        meatChopperEatBombermans(); //Мясник сожрал бомбера?
+
+        tactAllBombs(); //Сработали бомбы
+
+        generateMap(); //показали что получилось.
     }
 
     private void tactAllBombermans() {
@@ -80,20 +112,13 @@ public class Bomberman implements Field {
         }
     }
 
-    private void removeBlasts() {
-        blasts.clear();
-        for (Point pt : destroyedWalls) {
-            walls.destroy(pt.getX(), pt.getY());
-        }
-        destroyedWalls.clear();
-    }
-
-    private void wallDestroyed(Wall wall, Blast blast) {
+    private void wallDestroyed(Blast blast) {
         for (Player player : players) {
             if (blast.itsMine(player.getHero())) {
-                if (wall instanceof MeatChopper) {
+                if (meatChoppers.itsMe(blast.getX(), blast.getY())) {
                     player.event(Events.KILL_MEAT_CHOPPER);
-                } else if (wall instanceof DestroyWall) {
+                }
+                if (eatSpacesWalls.itsMe(blast.getX(), blast.getY())) {
                     player.event(Events.KILL_DESTROY_WALL);
                 }
             }
@@ -101,28 +126,24 @@ public class Bomberman implements Field {
     }
 
     private void meatChopperEatBombermans() {
-        for (MeatChopper chopper : walls.subList(MeatChopper.class)) {
-            for (Player player : players) {
+        meatChoppers.forEach(chopper -> {
+            players.forEach(player -> {
                 Hero bomberman = player.getHero();
                 if (bomberman.isAlive() && chopper.itsMe(bomberman)) {
                     player.event(Events.KILL_BOMBERMAN);
                 }
-            }
-        }
+            });
+        });
     }
 
     private void tactAllBombs() {
-        for (Bomb bomb : bombs) {
-            bomb.tick();
-        }
-
-        for (Bomb bomb : destroyedBombs) {
+        bombs.forEach(b -> b.tick());
+        destroyedBombs.forEach(bomb -> {
             bombs.remove(bomb);
-
             List<Blast> blast = makeBlast(bomb);
             killAllNear(blast, bomb);
             blasts.addAll(blast);
-        }
+        });
         destroyedBombs.clear();
     }
 
@@ -160,26 +181,34 @@ public class Bomberman implements Field {
     }
 
     private List<Blast> makeBlast(Bomb bomb) {
-        List barriers = walls.subList(Wall.class);
-        barriers.addAll(getBombermans());
-
-        return new BoomEngineOriginal(bomb.getOwner()).boom(barriers, size.getValue(), bomb, bomb.getPower());   // TODO move bomb inside BoomEngine
+        LinkedList<Point> barriers = new LinkedList<Point>() {{
+            addAll(getWalls());
+            addAll(getBombermans());
+            addAll(getMeatChoppers());
+            addAll(getEatSpacesWalls());
+            addAll(getBombs());
+        }}; //ограничители для взрува бомбы.
+        return new BoomEngineOriginal(bomb.getOwner()).boom(barriers, size(), bomb, bomb.getPower()); // TODO move bomb
+                                                                                                      // inside
+                                                                                                      // BoomEngine
     }
 
     private void killAllNear(List<Blast> blasts, Bomb bomb) {
-        for (Blast blast: blasts) {
-            if (walls.itsMe(blast.getX(), blast.getY())) {
-                destroyedWalls.add(blast);
-
-                Wall wall = walls.get(blast.getX(), blast.getY());
-                wallDestroyed(wall, blast);
+        for (Blast blast : blasts) {
+            Optional<DestroyWall> dw = eatSpacesWalls.getList().parallelStream().filter(w->w.itsMe(blast.getX(), blast.getY())).findFirst();
+            if (dw.isPresent()) {
+                destroyedWalls.add(dw.get());
+                wallDestroyed(blast);
+            }
+            Optional<Bomb> _b = bombs.parallelStream().filter(b->b.itsMe(blast)).findFirst();
+            if (_b.isPresent()) {
+                bombs.remove(_b.get());
             }
         }
-        for (Blast blast: blasts) {
+        for (Blast blast : blasts) {
             for (Player dead : players) {
                 if (dead.getHero().itsMe(blast)) {
                     dead.event(Events.KILL_BOMBERMAN);
-
                     for (Player bombOwner : players) {
                         if (dead != bombOwner && blast.itsMine(bombOwner.getHero())) {
                             bombOwner.event(Events.KILL_OTHER_BOMBERMAN);
@@ -200,47 +229,47 @@ public class Bomberman implements Field {
     }
 
     @Override
-    public Walls getWalls() {
-         return new WallsImpl(walls);
+    public List<Wall> getWalls() {
+        return level.getWalls();
+    }
+
+    @Override
+    public List<DestroyWall> getDestroyWall() {
+        return eatSpacesWalls.getList();
     }
 
     @Override
     public boolean isBarrier(int x, int y, boolean isWithMeatChopper) {
-        for (Hero bomberman : getBombermans()) {
-            if (bomberman.itsMe(pt(x, y))) {
-                return true;
+        if (!getWalls().stream().anyMatch(b -> b.itsMe(x, y))) {
+            if (!getBombermans().stream().anyMatch(b -> b.itsMe(x, y))) {
+                if (!bombs.stream().anyMatch(b -> b.itsMe(x, y))) {
+                    if (!meatChoppers.itsMe(x, y)) {
+                        if (!eatSpacesWalls.itsMe(x, y)) {
+                            return x < 0 || y < 0 || x > size() - 1 || y > size() - 1;
+                        }
+                    }
+                }
             }
         }
-        for (Bomb bomb : bombs) {
-            if (bomb.itsMe(x, y)) {
-                return true;
-            }
-        }
-        for (Wall wall : walls) {
-            if (wall instanceof MeatChopper && !isWithMeatChopper) {
-                continue;
-            }
-            if (wall.itsMe(x, y)) {
-                return true;
-            }
-        }
-        return x < 0 || y < 0 || x > size() - 1 || y > size() - 1;
+        return true;
     }
 
     @Override
     public List<Hero> getBombermans() {
+/*
         List<Hero> result = new LinkedList<Hero>();
         for (Player player : players) {
             result.add(player.getHero());
         }
-        return result;
+*/
+        return players.parallelStream().map(p->p.getHero()).collect(toList());
     }
 
-    @Override
     public void remove(Player player) {
         players.remove(player);
     }
 
+    @Override
     public void newGame(Player player) {
         if (!players.contains(player)) {
             players.add(player);
@@ -250,22 +279,49 @@ public class Bomberman implements Field {
 
     public BoardReader reader() {
         return new BoardReader() {
-            private int size = Bomberman.this.size();
-
             @Override
             public int size() {
-                return size;
+                return Bomberman.this.size();
             }
 
             @Override
             public Iterable<? extends Point> elements() {
-                return new LinkedList<Point>() {{
-                    addAll(Bomberman.this.getBombermans());
-                    Bomberman.this.getWalls().forEach(this::add);
-                    addAll(Bomberman.this.getBombs());
-                    addAll(Bomberman.this.getBlasts());
-                }};
+                return Bomberman.this.getFilledCells();
             }
+
         };
+    }
+
+    protected LinkedList<Point> getFilledCells() {
+        return map;
+    }
+
+    protected List<DestroyWall> getEatSpacesWalls() {
+        return eatSpacesWalls.getList();
+    }
+
+    protected List<MeatChopper> getMeatChoppers() {
+        return meatChoppers.getList();
+    }
+
+    @Override
+    public LinkedList<Point> getFreeCells() {
+        LinkedList<Point> free = new LinkedList<Point>();
+        for (int x = 0; x < size(); x++) {
+            for (int y = 0; y < size(); y++) {
+                final int x1 = x;
+                final int y1 = y;
+                if (map.parallelStream().noneMatch(s -> s.itsMe(x1, y1)))
+                {
+                    free.add(pt(x, y));
+                }
+            }
+        }
+        return free;
+    }
+
+    @Override
+    public ILevel getLevel() {
+        return level;
     }
 }

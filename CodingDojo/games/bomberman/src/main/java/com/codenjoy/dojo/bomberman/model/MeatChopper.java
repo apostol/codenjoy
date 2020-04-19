@@ -22,24 +22,44 @@ package com.codenjoy.dojo.bomberman.model;
  * #L%
  */
 
-
 import com.codenjoy.dojo.services.Direction;
+import com.codenjoy.dojo.services.PointImpl;
 import com.codenjoy.dojo.services.State;
 
 import static com.codenjoy.dojo.bomberman.model.Elements.DEAD_MEAT_CHOPPER;
 import static com.codenjoy.dojo.bomberman.model.Elements.MEAT_CHOPPER;
 
-public class MeatChopper extends Wall implements State<Elements, Player> {
+public class MeatChopper extends PointImpl implements State<Elements, Player> {
 
     private Direction direction;
 
     public MeatChopper(int x, int y) {
-        super(x, y);
+        super(pt(x, y));
     }
 
     @Override
-    public Wall copy() {
+    public int getX() {
+        return this.x;
+    }
+
+    @Override
+    public int getY() {
+        return this.y;
+    }
+
+    @Override
+    public MeatChopper copy() {
         return new MeatChopper(this.x, this.y);
+    }
+
+    @Override
+    public void setX(int x) {
+        this.x = x;
+    }
+
+    @Override
+    public void setY(int y) {
+        this.y = y;
     }
 
     public Direction getDirection() {
@@ -53,13 +73,11 @@ public class MeatChopper extends Wall implements State<Elements, Player> {
     @Override
     public Elements state(Player player, Object... alsoAtPoint) {
         Blast blast = null;
-
         if (alsoAtPoint.length > 1 && alsoAtPoint[1] != null) {
             if (alsoAtPoint[1] instanceof Blast) {
                 blast = (Blast)alsoAtPoint[1];
             }
         }
-
         if (blast != null) {
             return DEAD_MEAT_CHOPPER;
         } else {

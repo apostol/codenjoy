@@ -33,7 +33,7 @@ public class Blast extends PointImpl implements State<Elements, Player> {
     private Hero bomberman;
 
     public Blast(int x, int y, Hero bomberman) {
-        super(x, y);
+        super(pt(x, y));
         this.bomberman = bomberman;
     }
 
@@ -44,5 +44,25 @@ public class Blast extends PointImpl implements State<Elements, Player> {
     @Override
     public Elements state(Player player, Object... alsoAtPoint) {
         return BOOM;
+    }
+
+    @Override
+    public int getX() {
+        return x;
+    }
+
+    @Override
+    public int getY() {
+        return y;
+    }
+
+    @Override
+    public void setX(int x) {
+        this.x = x;
+    }
+
+    @Override
+    public void setY(int y) {
+        this.y = y;
     }
 }

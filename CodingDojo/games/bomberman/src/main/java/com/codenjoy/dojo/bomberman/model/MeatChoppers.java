@@ -22,104 +22,117 @@ package com.codenjoy.dojo.bomberman.model;
  * #L%
  */
 
-
 import com.codenjoy.dojo.services.Dice;
 import com.codenjoy.dojo.services.Direction;
 import com.codenjoy.dojo.services.Point;
 import com.codenjoy.dojo.services.settings.Parameter;
+import com.codenjoy.dojo.bomberman.interfaces.IField;
 
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.stream.Collectors;
 
-import static com.codenjoy.dojo.services.PointImpl.pt;
-
-public class MeatChoppers extends WallsDecorator implements Walls {
+public class MeatChoppers implements Iterable<MeatChopper> {
 
     private static final boolean WITH_MEATCHOPPERS = true;
     private Parameter<Integer> count;
-    private Field board;
+    private int count_cache = 0;
     private Dice dice;
+    private final LinkedList<MeatChopper> list = new LinkedList<>(); ;
 
-    public MeatChoppers(Walls walls, Field board, Parameter<Integer> count, Dice dice) {
-        super(walls);
-        this.board = board;
+    public MeatChoppers (Parameter<Integer> count, Dice dice) {
         this.dice = dice;
         this.count = count;
+        this.count_cache = count.getValue();
     }
 
+    public void clear(){
+        list.clear();
+    }
 
-    public void regenerate() {     // TODO потестить
+    public void regenerate(IField board) {
         if (count.getValue() < 0) {
             count.update(0);
         }
 
-        int count = walls.subList(MeatChopper.class).size();
+        if (count.getValue() != count_cache && count.getValue() > 0) {
+            count_cache = count.getValue();
+        };
 
-        int c = 0;
-        int maxc = 100;
-        while (count < this.count.getValue() && c < maxc) {
-            int x = dice.next(board.size());
-            int y = dice.next(board.size());
-
-            // TODO это капец как долго выполняется, убрать нафиг митчомеров из Walls и сам Walls рассформировать!
-            if (!board.isBarrier(x, y, WITH_MEATCHOPPERS) && !board.getBombermans().contains(pt(x, y))) {
-                walls.add(new MeatChopper(x, y));
-                count++;
+        if (list.size() < count_cache) {
+            int c = list.size();
+            List<Point> free = board.getFreeCells();
+            while (c < count_cache) {
+                Point position = free.remove(dice.next(free.size()));
+                list.add(new MeatChopper(position.getX(), position.getY()));
+                c++;
             }
-
-            c++;
-        }
-
-        if (c == maxc) {
-//            throw new IllegalStateException("Dead loop at MeatChoppers.regenerate!"); // TODO тут часто вылетает :(
         }
     }
 
-    @Override
-    public void tick() {
-        super.tick(); // TODO протестить эту строчку + сделать через Template Method
-        regenerate();
-
-        List<MeatChopper> meatChoppers = walls.subList(MeatChopper.class);
-        for (MeatChopper meatChopper : meatChoppers) {
+    public void tick(IField board) {
+        regenerate(board);
+        list.forEach(meatChopper -> {
             Direction direction = meatChopper.getDirection();
             if (direction != null && dice.next(5) > 0) {
                 int x = direction.changeX(meatChopper.getX());
                 int y = direction.changeY(meatChopper.getY());
-                if (!walls.itsMe(x, y)) {
+                if (!itsMe(x, y) && !isBarrier(board, x, y)) {
                     meatChopper.move(x, y);
-                    continue;
-                } else {
-                    // do nothing
                 }
             }
-            meatChopper.setDirection(tryToMove(meatChopper));
-        }
+            meatChopper.setDirection(tryToMove(board, meatChopper));
+        });
     }
 
-    private Direction tryToMove(Point pt) {
-        int count = 0;
+    private boolean isBarrier(IField board, int x, int y){
+        if (x <= board.size() && y <= board.size() && x > 0 && y > 0) {
+            if (!(itsMe(x, y) && WITH_MEATCHOPPERS)) {
+                if (!board.getWalls().parallelStream().anyMatch(b -> b.itsMe(x, y))) {
+                    if (!board.getBombs().parallelStream().anyMatch(b -> b.itsMe(x, y))) {
+                        return board.getDestroyWall().parallelStream().anyMatch(b -> b.itsMe(x, y));
+                    }
+                }
+            }
+        }
+        return true;
+    }
+
+    private Direction tryToMove(IField board, Point pt) {
         int x = pt.getX();
         int y = pt.getY();
-        Direction direction = null;
+        List<Direction> dirs = new ArrayList<>(Direction.getValues());
+        Direction direction;
         do {
-            int n = 4;
-            int move = dice.next(n);
-            direction = Direction.valueOf(move);
-
+            direction = dirs.get(dice.next(dirs.size()));
             x = direction.changeX(pt.getX());
             y = direction.changeY(pt.getY());
+            dirs.remove(direction);
+        } while (dirs.size()>0 && isOutOfBorder(board, x, y));
 
-        } while ((walls.itsMe(x, y) || isOutOfBorder(x, y)) && count++ < 10);
-
-        if (count < 10) {
-            pt.move(x, y);
+        if (dirs.size() > 0) {
             return direction;
         }
         return null;
     }
 
-    private boolean isOutOfBorder(int x, int y) {
+    public boolean itsMe(int x, int y) {
+        return list.stream().anyMatch(r->r.itsMe(x, y));
+    }
+
+    private boolean isOutOfBorder(IField board, int x, int y) {
         return x >= board.size() || y >= board.size() || x < 0 || y < 0;
     }
+
+    @Override
+    public Iterator<MeatChopper> iterator() {
+        return list.iterator();
+    }
+
+	public List<MeatChopper> getList() {
+		return list;
+	}
 
 }
