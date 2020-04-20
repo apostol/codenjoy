@@ -23,51 +23,38 @@ package com.codenjoy.dojo.bomberman.model;
  */
 
 
+import com.codenjoy.dojo.services.Point;
 import com.codenjoy.dojo.services.State;
 
 import static com.codenjoy.dojo.bomberman.model.Elements.DESTROYED_WALL;
 import static com.codenjoy.dojo.bomberman.model.Elements.DESTROYABLE_WALL;
 
-public class DestroyWall extends Wall implements State<Elements, Player> {
+public class DestroyWall extends AbstractWall implements State<Elements, Player> {
     public DestroyWall(int x, int y) {
         super(x, y);
     }
 
-    @Override
-    public int getX() {
-        return this.x;
+    public DestroyWall(Point pt){
+        super(pt);
+    }
+
+    public DestroyWall(DestroyWall wall) {
+        super(wall);
     }
 
     @Override
-    public int getY() {
-        return this.y;
-    }
-
-    @Override
-    public Wall copy() {
+    public DestroyWall copy() {
         return new DestroyWall(this.x, this.y);
-    }
-
-    @Override
-    public void setX(int x) {
-        this.x = x;
-    }
-
-    @Override
-    public void setY(int y) {
-        this.y = y;
     }
 
     @Override
     public Elements state(Player player, Object... alsoAtPoint) {
         Blast blast = null;
-
         if (alsoAtPoint.length > 1 && alsoAtPoint[1] != null) {
             if (alsoAtPoint[1] instanceof Blast) {
                 blast = (Blast)alsoAtPoint[1];
             }
         }
-
         if (blast != null) {
             return DESTROYED_WALL;
         } else {

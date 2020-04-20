@@ -22,48 +22,23 @@ package com.codenjoy.dojo.bomberman.model;
  * #L%
  */
 
-
-import com.codenjoy.dojo.services.PointImpl;
-import com.codenjoy.dojo.services.State;
 import com.codenjoy.dojo.services.Point;
 import static com.codenjoy.dojo.bomberman.model.Elements.WALL;
 
-public class Wall extends PointImpl implements State<Elements, Player> {
+public class Wall extends AbstractWall {
     
     public Wall(Point pt){
         super(pt);
     }
 
-    public Wall(int x, int y) {
-        super(pt(x, y));
-    }
+    public Wall(int x, int y) { super(x, y); }
 
     public Wall(Wall wall) {
         super(wall);
     }
 
-    @Override
-    public int getX() {
-        return this.x;
-    }
-
-    @Override
-    public int getY() {
-        return this.y;
-    }
-
     public Wall copy() {
         return new Wall(this);
-    }
-
-    @Override
-    public void setX(int x) {
-        this.x = x;
-    }
-
-    @Override
-    public void setY(int y) {
-        this.y = y;
     }
 
     @Override

@@ -1,7 +1,5 @@
 package com.codenjoy.dojo.bomberman.services;
 
-import com.codenjoy.dojo.bomberman.interfaces.IGameSettings;
-
 /*-
  * #%L
  * Codenjoy - it's a dojo-like platform from developers to developers.
@@ -28,11 +26,9 @@ import com.codenjoy.dojo.services.Dice;
 import com.codenjoy.dojo.services.multiplayer.MultiplayerType;
 import com.codenjoy.dojo.services.settings.Parameter;
 import com.codenjoy.dojo.services.settings.Settings;
-
 import java.util.Arrays;
-import java.util.List;
 
-public abstract class OptionGameSettings extends DefaultGameSettings {
+public class OptionGameSettings extends DefaultGameSettings {
 
     protected final Parameter<Integer> bombPower;
     protected final Parameter<Integer> bombsCount;
@@ -69,15 +65,7 @@ public abstract class OptionGameSettings extends DefaultGameSettings {
         }
     }
 
-    @Override
-    public Parameter<String> getGameTypeParameter() {
-        return gameType;
-    }
-
-    @Override
-    public Parameter<String> getCurrentMapParameter(){  return this.currentMap; }
-
-    public void setBoardSizeParameter(int size){
+     public void setBoardSizeParameter(int size){
         boardSize.update(size);
     }
 
@@ -96,33 +84,22 @@ public abstract class OptionGameSettings extends DefaultGameSettings {
         return bombsCount;
     }
 
+    @Override
+    public Parameter<Integer> getMeatChoppersCountParameter() {
+        return meatChoppersCount;
+    }
 
+    @Override
+    public Parameter<Integer> getDestroyWallCountParameter() {
+        return destroyWallCount;
+    }
 
-    // @Override
-    // public ILevel getLevel() {
-    //     return new Level() {
-    //         @Override
-    //         public int bombsCount() {
-    //             return bombsCount.getValue();
-    //         }
+    @Override
+    public Parameter<String> getCurrentMapParameter() { return currentMap; }
 
-    //         @Override
-    //         public int bombsPower() {
-    //             return bombPower.getValue();
-    //         }
-    //     };
-    // }
+    @Override
+    public Parameter<String> getGameTypeParameter() {
+        return gameType;
+    }
 
-    // @Override
-    // public Walls getWalls(Bomberman board) {
-    //     OriginalWalls originalWalls = new OriginalWalls(boardSize);
-    //     MeatChoppers meatChoppers = new MeatChoppers(originalWalls, board, meatChoppersCount, dice);
-    //     EatSpaceWalls eatWalls = new EatSpaceWalls(meatChoppers, board, destroyWallCount, dice);
-    //     return eatWalls;
-    // }
-
-    // @Override
-    // public Hero getBomberman(Level level) {
-    //     return new Hero(level, dice);
-    // }
 }

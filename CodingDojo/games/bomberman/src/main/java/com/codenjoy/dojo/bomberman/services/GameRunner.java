@@ -37,11 +37,11 @@ import com.codenjoy.dojo.services.settings.Parameter;
 public class GameRunner extends AbstractGameType implements GameType {
 
     public static final String GAME_NAME = "bomberman";
-    private final ILevel level;
+    private final IGameSettings gameSettings;
 
     public GameRunner() {
         new Scores(0, settings); // TODO сеттринги разделены по разным классам, продумать архитектуру
-        level = new LevelImpl(settings, getDice());
+        gameSettings = new OptionGameSettings(settings, getDice());
     }
 
     @Override
@@ -51,12 +51,12 @@ public class GameRunner extends AbstractGameType implements GameType {
 
     @Override
     public IField createGame(int levelNumber) {
-        return new Bomberman(level);
+        return new Bomberman(gameSettings);
     }
 
     @Override
     public Parameter<Integer> getBoardSize() {
-        return level.getBoardSizeParameter();
+        return gameSettings.getBoardSizeParameter();
     }
 
     @Override
@@ -81,16 +81,11 @@ public class GameRunner extends AbstractGameType implements GameType {
 
     @Override
     public MultiplayerType getMultiplayerType() {
-        return level.getGameType();
+        return gameSettings.getGameType();
     }
 
     @Override
     public Player createPlayer(EventListener listener, String playerName) {
         return new Player(listener);
-    }
-
-    @Override
-    public void quietTick(){
-        level.tick(); //обновление конфигурации уровня
     }
 }

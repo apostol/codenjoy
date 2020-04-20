@@ -28,7 +28,5 @@ import com.codenjoy.dojo.services.Point;
 import java.util.List;
 
 public interface IBoomEngine {
-
     List<Blast> boom(List<? extends Point> barriers, int boardSize, Point source, int radius);
-
 }
