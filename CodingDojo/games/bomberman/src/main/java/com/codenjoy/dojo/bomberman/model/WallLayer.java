@@ -10,52 +10,54 @@ package com.codenjoy.dojo.bomberman.model;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
 
-
-import com.codenjoy.dojo.bomberman.services.Events;
-import com.codenjoy.dojo.services.EventListener;
-import com.codenjoy.dojo.services.multiplayer.GamePlayer;
 import com.codenjoy.dojo.bomberman.interfaces.IField;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
 
+public class WallLayer implements Iterable<Wall> {
 
-public class Player extends GamePlayer<Hero, IField> {
+    private final LinkedList<Wall> walls = new LinkedList<>();
+    private final IField field;
 
-    private Hero hero;
-
-    public Player(EventListener listener) {
-        super(listener);
+    public WallLayer(IField board) {
+        this.field = board;
     }
 
     @Override
-    public Hero getHero() {
-        return hero;
+    public Iterator<Wall> iterator() {
+        return walls.iterator();
     }
 
-    @Override
-    public boolean isAlive() {
-        return hero != null && hero.isAlive();
+    public void clear() {
+        walls.clear();
     }
 
-    public void event(Events event) {
-        if (event == Events.KILL_BOMBERMAN) {
-            hero.kill();
-        }
-        super.event(event);
+    public boolean itsMe(int x, int y) {
+        return walls.parallelStream().anyMatch(r -> r.itsMe(x, y));
     }
 
-    public void newHero(IField board) {
-        hero = new Hero();
-        hero.init(board);
+    public List<Wall> getList() {
+        return walls;
+    }
+
+    public void add(List<Wall> collect) {
+        walls.addAll(collect);
+    }
+
+    public void regenerate() {
+        //ничего не генерим, так как соллекция уже создана.
     }
 }

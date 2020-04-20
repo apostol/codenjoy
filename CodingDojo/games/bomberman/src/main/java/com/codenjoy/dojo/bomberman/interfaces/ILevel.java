@@ -24,19 +24,15 @@ package com.codenjoy.dojo.bomberman.interfaces;
 
 import java.util.List;
 
-import com.codenjoy.dojo.bomberman.model.EatSpaceWalls;
-import com.codenjoy.dojo.bomberman.model.MeatChoppers;
+import com.codenjoy.dojo.bomberman.model.DestroyWallLayer;
+import com.codenjoy.dojo.bomberman.model.MeatChopperLayer;
 import com.codenjoy.dojo.bomberman.model.Wall;
-import com.codenjoy.dojo.services.settings.Parameter;
 
 
 public interface ILevel extends IGameSettings {
     int getSize();
-    List<Wall> getWalls();
     void tick();
-	MeatChoppers getMeatChoppers();
-	EatSpaceWalls getEatSpacesWalls();
-  boolean isChanged(); //обновился ли уровень?
-  void changesReacted(); //Учли обновление
+    boolean isChanged(); //обновился ли уровень?
+    void changesReacted(); //Учли обновление
 
 }

@@ -9,25 +9,23 @@ package com.codenjoy.dojo.bomberman.model;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
 
-
-import com.codenjoy.dojo.services.PointImpl;
 import com.codenjoy.dojo.services.State;
 import com.codenjoy.dojo.services.Tickable;
 import com.codenjoy.dojo.bomberman.interfaces.IField;
 
-public class Bomb extends PointImpl implements Tickable, State<Elements, Player> {
+public class Bomb extends AbstractPoint implements Tickable, State<Elements, Player> {
     protected int timer = 5;
     protected int power;
     private Hero owner;
@@ -48,7 +46,7 @@ public class Bomb extends PointImpl implements Tickable, State<Elements, Player>
     }
 
     public void boom() {
-        field.removeBomb(this);
+        field.getBombsLayer().addToDestroy(this);
     }
 
     public int getTimer() {
@@ -74,32 +72,18 @@ public class Bomb extends PointImpl implements Tickable, State<Elements, Player>
     @Override
     public Elements state(Player player, Object... alsoAtPoint) {
         switch (timer) {
-            case 1 : return Elements.BOMB_TIMER_1;
-            case 2 : return Elements.BOMB_TIMER_2;
-            case 3 : return Elements.BOMB_TIMER_3;
-            case 4 : return Elements.BOMB_TIMER_4;
-            case 5 : return Elements.BOMB_TIMER_5;
-            default : return Elements.BOOM;
+            case 1:
+                return Elements.BOMB_TIMER_1;
+            case 2:
+                return Elements.BOMB_TIMER_2;
+            case 3:
+                return Elements.BOMB_TIMER_3;
+            case 4:
+                return Elements.BOMB_TIMER_4;
+            case 5:
+                return Elements.BOMB_TIMER_5;
+            default:
+                return Elements.BOOM;
         }
-    }
-
-    @Override
-    public int getX() {
-        return this.x;
-    }
-
-    @Override
-    public int getY() {
-        return this.y;
-    }
-
-    @Override
-    public void setX(int x) {
-        this.x = x;
-    }
-
-    @Override
-    public void setY(int y) {
-        this.y = y;
     }
 }

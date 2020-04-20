@@ -22,7 +22,7 @@ package com.codenjoy.dojo.bomberman.model;
  * #L%
  */
 
-import com.codenjoy.dojo.services.Dice;
+import com.codenjoy.dojo.bomberman.services.Events;
 import com.codenjoy.dojo.services.Direction;
 import com.codenjoy.dojo.services.Point;
 import com.codenjoy.dojo.services.settings.Parameter;
@@ -32,27 +32,27 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.stream.Collectors;
 
-public class MeatChoppers implements Iterable<MeatChopper> {
+public class MeatChopperLayer implements Iterable<MeatChopper> {
 
     private static final boolean WITH_MEATCHOPPERS = true;
+    private final IField field;
     private Parameter<Integer> count;
     private int count_cache = 0;
-    private Dice dice;
-    private final LinkedList<MeatChopper> list = new LinkedList<>(); ;
+    private final LinkedList<MeatChopper> list = new LinkedList<>();
+    private final LinkedList<MeatChopper> toDestroy = new LinkedList<>();
 
-    public MeatChoppers (Parameter<Integer> count, Dice dice) {
-        this.dice = dice;
-        this.count = count;
-        this.count_cache = count.getValue();
+    public MeatChopperLayer(IField field) {
+        this.field = field;
+        this.count = field.getGameSettings().getMeatChoppersCountParameter(); //TODO: должно быть в отдельном классе с настройками
     }
 
     public void clear(){
         list.clear();
     }
+    public void addToDestroy(MeatChopper meat) { toDestroy.add(meat); };
 
-    public void regenerate(IField board) {
+    public void regenerate() {
         if (count.getValue() < 0) {
             count.update(0);
         }
@@ -61,38 +61,65 @@ public class MeatChoppers implements Iterable<MeatChopper> {
             count_cache = count.getValue();
         };
 
+        toDestroy.forEach(meat -> {
+            list.remove(meat);
+        });
+        toDestroy.clear();
+
         if (list.size() < count_cache) {
             int c = list.size();
-            List<Point> free = board.getFreeCells();
+            List<Point> free = field.getMapLayer().getFreeCells();
             while (c < count_cache) {
-                Point position = free.remove(dice.next(free.size()));
+                Point position = free.remove(field.getGameSettings().getDice().next(free.size()));
                 list.add(new MeatChopper(position.getX(), position.getY()));
                 c++;
             }
         }
     }
 
-    public void tick(IField board) {
-        regenerate(board);
+    public void update() {
+        regenerate();
+        //TODO: Проверить правильно ли работаеь
+        //тут мы проверяем сожрали ли мы игрока до нашего движения
+        list.forEach(chopper -> {
+            field.getPlayerLayer().forEach(player -> {
+                Hero bomberman = player.getHero();
+                if (bomberman.isAlive() && chopper.itsMe(bomberman)) {
+                    player.event(Events.KILL_BOMBERMAN);
+                }
+            });
+        });
+
         list.forEach(meatChopper -> {
             Direction direction = meatChopper.getDirection();
-            if (direction != null && dice.next(5) > 0) {
+            if (direction != null && field.getGameSettings().getDice().next(5) > 0) {
                 int x = direction.changeX(meatChopper.getX());
                 int y = direction.changeY(meatChopper.getY());
-                if (!itsMe(x, y) && !isBarrier(board, x, y)) {
+                if (!itsMe(x, y) && !isBarrier(field, x, y)) {
                     meatChopper.move(x, y);
                 }
             }
-            meatChopper.setDirection(tryToMove(board, meatChopper));
+            meatChopper.setDirection(tryToMove(field, meatChopper));
+        });
+
+        //тут мы проверяем сожрали ли мы игрока после нашего движения. Я так полагаю, сделано для того, чтобы игрок не убежал на следующем ходе
+        list.forEach(chopper -> {
+            field.getPlayerLayer().forEach(player -> {
+                Hero bomberman = player.getHero();
+                if (bomberman.isAlive() && chopper.itsMe(bomberman)) {
+                    player.event(Events.KILL_BOMBERMAN);
+                }
+            });
         });
     }
 
     private boolean isBarrier(IField board, int x, int y){
-        if (x <= board.size() && y <= board.size() && x > 0 && y > 0) {
+        int size = board.getMapLayer().getSize();
+        if (x <= size && y <= size && x > 0 && y > 0) {
             if (!(itsMe(x, y) && WITH_MEATCHOPPERS)) {
-                if (!board.getWalls().parallelStream().anyMatch(b -> b.itsMe(x, y))) {
-                    if (!board.getBombs().parallelStream().anyMatch(b -> b.itsMe(x, y))) {
-                        return board.getDestroyWall().parallelStream().anyMatch(b -> b.itsMe(x, y));
+                if (!board.getWallsLayer().itsMe(x, y)) {
+                    if (!board.getBombsLayer().itsMe(x, y)) {
+                        return board.getDestroyWallsLayer().itsMe(x, y);
                     }
                 }
             }
@@ -106,7 +133,7 @@ public class MeatChoppers implements Iterable<MeatChopper> {
         List<Direction> dirs = new ArrayList<>(Direction.getValues());
         Direction direction;
         do {
-            direction = dirs.get(dice.next(dirs.size()));
+            direction = dirs.get(field.getGameSettings().getDice().next(dirs.size()));
             x = direction.changeX(pt.getX());
             y = direction.changeY(pt.getY());
             dirs.remove(direction);
@@ -123,7 +150,8 @@ public class MeatChoppers implements Iterable<MeatChopper> {
     }
 
     private boolean isOutOfBorder(IField board, int x, int y) {
-        return x >= board.size() || y >= board.size() || x < 0 || y < 0;
+        int size = field.getMapLayer().getSize();
+        return x >= size || y >= size || x < 0 || y < 0;
     }
 
     @Override

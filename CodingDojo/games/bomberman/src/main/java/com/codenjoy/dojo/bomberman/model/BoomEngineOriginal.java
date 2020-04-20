@@ -29,7 +29,6 @@ import java.util.LinkedList;
 import java.util.List;
 import static com.codenjoy.dojo.services.PointImpl.*;
 import com.codenjoy.dojo.bomberman.interfaces.IBoomEngine;
-import com.codenjoy.dojo.services.PointImpl;
 
 public class BoomEngineOriginal implements IBoomEngine {
 

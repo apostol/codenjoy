@@ -27,20 +27,15 @@ import com.codenjoy.dojo.services.multiplayer.GameField;
 import com.codenjoy.dojo.services.Dice;
 import com.codenjoy.dojo.services.Point;
 
+import java.util.Collection;
 import java.util.List;
 
 public interface IField extends GameField<Player> {  // TODO применить тут ISP (все ли методы должны быть паблик?)
-    int size();
-
-    List<Hero> getBombermans();
-    List<Bomb> getBombs(); //список бомб
-    List<Bomb> getBombs(Hero bomberman); //список бомб конкретного игрока
-    List<Wall> getWalls(); //список неуничтожаемых стен
-    List<DestroyWall> getDestroyWall(); //список уничтожаемых стен
-    boolean isBarrier(int x, int y, boolean isWithMeatChopper); //проверка на ВСЕ препятствия
-    List<Blast> getBlasts();
-    void drop(Bomb bomb);
-    void removeBomb(Bomb bomb);
-    List<Point> getFreeCells();
-    ILevel getLevel();
+    IGameSettings getGameSettings(); //насройки игры
+    PlayerLayer getPlayerLayer(); //работа с игроками
+    MeatChopperLayer getMeatChoppersLayer(); //работа с мясниками
+    DestroyWallLayer getDestroyWallsLayer(); //работа с уничтожаемыми стенами
+    BombsLayer getBombsLayer(); //работа с бомбами
+    WallLayer getWallsLayer(); //работа со стенами
+    MapLayer getMapLayer(); //работа с картой
 }

@@ -24,7 +24,6 @@ package com.codenjoy.dojo.bomberman.services;
 
 import com.codenjoy.dojo.bomberman.interfaces.*;
 import com.codenjoy.dojo.services.Dice;
-import com.codenjoy.dojo.services.settings.Parameter;
 
 public abstract class DefaultGameSettings implements IGameSettings {
 
@@ -54,5 +53,4 @@ public abstract class DefaultGameSettings implements IGameSettings {
     public Dice getDice(){
         return dice;
     }
-
 }

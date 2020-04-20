@@ -22,7 +22,6 @@ package com.codenjoy.dojo.bomberman.model;
  * #L%
  */
 
-import com.codenjoy.dojo.services.Dice;
 import com.codenjoy.dojo.services.Direction;
 import com.codenjoy.dojo.services.Point;
 import com.codenjoy.dojo.services.State;
@@ -35,25 +34,20 @@ import java.util.List;
 public class Hero extends PlayerHero<IField> implements State<Elements, Player> {
 
     private static final boolean WITHOUT_MEAT_CHOPPER = false;
-    private ILevel level;
-    private Dice dice;
     private boolean alive;
     private boolean bomb;
     private Direction direction;
 
-    public Hero(IField field) {
+    public Hero() {
         super(-1, -1);
-        this.level = field.getLevel();
-        this.dice = field.getLevel().getDice();
         alive = true;
         direction = null;
-        init(field);
     }
 
     public void init(IField field) {
         super.init(field);
-        List<Point> free = field.getFreeCells();
-        Point position = free.remove(dice.next(free.size()));
+        List<Point> free = field.getMapLayer().getFreeCells();
+        Point position = free.remove(field.getGameSettings().getDice().next(free.size()));
         move(position.getX(), position.getY());
     }
 
@@ -100,7 +94,7 @@ public class Hero extends PlayerHero<IField> implements State<Elements, Player> 
 
         int newX = direction.changeX(x);
         int newY = direction.changeY(y);
-        if (!field.isBarrier(newX, newY, WITHOUT_MEAT_CHOPPER)) {
+        if (!field.getMapLayer().isBarrier(newX, newY, WITHOUT_MEAT_CHOPPER)) {
             move(newX, newY);
         }
         direction = null;
@@ -111,8 +105,8 @@ public class Hero extends PlayerHero<IField> implements State<Elements, Player> 
     }
 
     private void setBomb(int bombX, int bombY) {
-        if (field.getBombs(this).size() < level.getBombsCountParameter().getValue()) {
-            field.drop(new Bomb(this, bombX, bombY, level.getBombsPowerParameter().getValue(), field));
+        if (field.getBombsLayer().getBombs(this).size() < field.getGameSettings().getBombsCountParameter().getValue()) {
+            field.getBombsLayer().drop(new Bomb(this, bombX, bombY, field.getGameSettings().getBombsPowerParameter().getValue(), field));
         }
     }
 
