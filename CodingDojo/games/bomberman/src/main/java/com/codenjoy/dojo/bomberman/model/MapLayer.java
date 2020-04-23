@@ -99,7 +99,7 @@ public class MapLayer implements Iterable<Point> {
 
     public boolean isBarrier(int x, int y, boolean isWithMeatChopper) {
         int size = getSize();
-        if (x > 0 && y > 0 && x < size - 1 && y < size - 1) {
+        if (x > 0 && y > 0 && x < size - 1 && y < size - 1) { //isWithMeatChopper - проверить на чопера, так как я должен иметь возможносьт сходить на эту позицию. 
             if (cells.parallelStream().noneMatch(s -> s.itsMe(x, y))) {
                 return false;
             }
