@@ -107,7 +107,7 @@ License along with this program.  If not, see
                 </div>
             </c:if>
             <button class="btn-submit" id="submit-button" type="button">Sign in</button>
-            <a class="btn-submit reg-link" id="registration-button" href="${ctx}/register">Sign Up</a>
+            <a class="btn-submit reg-link" id="registration-button" href="${ctx}/register" style="display: inherit;">Sign Up</a>
         </div>
     </form:form>
 </div>
