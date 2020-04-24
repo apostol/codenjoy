@@ -62,11 +62,8 @@ function initBoards(players, allPlayersScreen, gameName, playerName, contextPath
         };
         socket.onmessage = function(message) {
             var data = JSON.parse(message.data);
-
             $('body').css('background-color', 'white');
-
             $('body').trigger('board-updated', data);
-
             updatePlayersInfo();
         };
     }
