@@ -23,6 +23,8 @@ package com.codenjoy.dojo.bomberman.model;
  */
 
 import com.codenjoy.dojo.bomberman.interfaces.IField;
+import com.codenjoy.dojo.services.Direction;
+
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -43,6 +45,28 @@ public class PlayerLayer implements Iterable<Player> {
     }
 
     public void update() {
+        int size = field.getMapLayer().getSize();
+        Hero[][] collisionMap = new Hero[size][size];
+        for (Hero hero : heroes) {
+            hero.setCollision(false);
+            if (!hero.isAlive()) {
+                continue;
+            }
+            Direction direction = hero.getDirection();
+            if (direction == null) {
+                direction = Direction.STOP;
+            }
+            int x = direction.changeX(hero.getX());
+            int y = direction.changeY(hero.getY());
+            Hero old = collisionMap[x][y];
+            if (old == null) {
+                collisionMap[x][y] = hero;
+            } else {
+                hero.setCollision(true);
+                old.setCollision(true);
+            }
+        }
+        
         for (Hero hero : heroes) {
             hero.apply();
         }

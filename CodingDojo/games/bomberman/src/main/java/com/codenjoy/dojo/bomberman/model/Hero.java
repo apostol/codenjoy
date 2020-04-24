@@ -37,6 +37,7 @@ public class Hero extends PlayerHero<IField> implements State<Elements, Player> 
     private boolean alive;
     private boolean bomb;
     private Direction direction;
+    private boolean collision;
 
     public Hero() {
         super(-1, -1);
@@ -94,9 +95,10 @@ public class Hero extends PlayerHero<IField> implements State<Elements, Player> 
 
         int newX = direction.changeX(x);
         int newY = direction.changeY(y);
-        if (!field.getMapLayer().isBarrier(newX, newY, WITHOUT_MEAT_CHOPPER)) {
+        if (!field.getMapLayer().isBarrier(newX, newY, WITHOUT_MEAT_CHOPPER) && !collision) {
             move(newX, newY);
         }
+        collision = false;
         direction = null;
         if (bomb) {
             setBomb(x, y);
@@ -164,6 +166,14 @@ public class Hero extends PlayerHero<IField> implements State<Elements, Player> 
     @Override
     public int getY() {
         return this.y;
+    }
+
+    public Direction getDirection() {
+        return direction;
+    }
+
+    public void setCollision(boolean collision) {
+        this.collision = collision;
     }
 
     @Override
