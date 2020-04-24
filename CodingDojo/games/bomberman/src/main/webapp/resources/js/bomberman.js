@@ -23,7 +23,6 @@
 
 function initLeadersTable(contextPath, playerName, code, onDrawItem, onParseValue){
     var leaderboard = $("#leaderboard");
-    leaderboard.css("width", "auto").css("font-size","inherit");
     leaderboard.show();
 
 
