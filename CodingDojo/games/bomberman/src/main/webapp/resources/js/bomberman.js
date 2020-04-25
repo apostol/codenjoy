@@ -23,6 +23,7 @@
 
 function initLeadersTable(contextPath, playerName, code, onDrawItem, onParseValue){
     var leaderboard = $("#leaderboard");
+    leaderboard.css("position:","relative").css("float","right");
     leaderboard.show();
 
 
