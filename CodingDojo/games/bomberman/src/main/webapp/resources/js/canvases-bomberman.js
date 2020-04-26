@@ -440,7 +440,6 @@ function initCanvases(contextPath, players, allPlayersScreen,
                     shadowBlur: 7
                 }
             }
-	    console.log(font);
             ctx.font = font.font;
             ctx.fillStyle =  font.fillStyle;
             ctx.textAlign = font.textAlign;
