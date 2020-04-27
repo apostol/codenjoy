@@ -313,6 +313,7 @@ public class PlayerGames implements Iterable<PlayerGame>, Tickable {
     // переводим всех игроков на новые борды
     // при этом если надо перемешиваем их
     public void reloadAll(boolean shuffle) {
+        all.forEach(pg -> spreader.remove(pg.getGame().getPlayer()));
         new LinkedList<PlayerGame>(){{
             addAll(all);
             if (shuffle) {
