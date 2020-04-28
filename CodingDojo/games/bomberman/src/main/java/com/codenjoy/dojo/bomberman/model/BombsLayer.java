@@ -47,10 +47,20 @@ public class BombsLayer implements Iterable<Bomb> {
 
     public void update() {
         blasts.clear();
+        LinkedList<Point> barriers = new LinkedList<Point>() {{
+            addAll(field.getWallsLayer().getList());
+            addAll(field.getPlayerLayer().getHeroes());
+            addAll(field.getMeatChoppersLayer().getList());
+            addAll(field.getDestroyWallsLayer().getList());
+            addAll(bombs);
+        }}; //ограничители для взрыва бомбы. Собираем один раз, так как в этом потоке мы работаем только с бомбами и ничего более не меняем в ограничителях
+
         bombs.forEach(b -> b.tick());
         toDestroy.forEach(bomb -> {
             remove(bomb);
-            blasts.addAll(makeBlast(bomb));
+            if (!itsBlast(bomb.getX(), bomb.getY())) { //Добавляем только если бомба еще не взорвалась.
+                blasts.addAll(makeBlast(bomb, barriers));
+            }
         });
         killAllNear(blasts);
         toDestroy.clear();
@@ -92,20 +102,7 @@ public class BombsLayer implements Iterable<Bomb> {
         toDestroy.add(bomb);
     }
 
-    public void regenerate() {
-        //тут тоже нечего генерировать
-    }
-
-
-
-    private List<Blast> makeBlast(Bomb bomb) {
-        LinkedList<Point> barriers = new LinkedList<Point>() {{
-            addAll(field.getWallsLayer().getList());
-            addAll(field.getPlayerLayer().getHeroes());
-            addAll(field.getMeatChoppersLayer().getList());
-            addAll(field.getDestroyWallsLayer().getList());
-            addAll(bombs);
-        }}; //ограничители для взрыва бомбы.
+    private List<Blast> makeBlast(Bomb bomb, LinkedList<Point> barriers) {
         return new BoomEngineOriginal(bomb.getOwner()).boom(barriers, field.getMapLayer().getSize(), bomb, bomb.getPower());
     }
 
@@ -142,23 +139,8 @@ public class BombsLayer implements Iterable<Bomb> {
             if (_b.isPresent()) {
                 bombs.remove(_b.get());
             }
-//            wallDestroyed(blast);
         }
     }
-
-//    private void wallDestroyed(Blast blast) {
-//        for (Player player : field.getPlayerLayer()) {
-//            if (blast.itsMine(player.getHero())) {
-//                if (field.getMeatChoppersLayer().itsMe(blast.getX(), blast.getY())) {
-//                    player.event(Events.KILL_MEAT_CHOPPER);
-//                }
-//                if (field.getDestroyWallsLayer().itsMe(blast.getX(), blast.getY())) {
-//                    player.event(Events.KILL_DESTROY_WALL);
-//                }
-//            }
-//        }
-//    }
-
 
     private boolean existAtPlace(int x, int y) {
         for (Bomb bomb : bombs) {
@@ -173,5 +155,9 @@ public class BombsLayer implements Iterable<Bomb> {
         bombs.clear();
         blasts.clear();
         toDestroy.clear();
+    }
+
+    private boolean itsBlast(int x, int y) {
+        return blasts.stream().anyMatch(r->r.itsMe(x, y));
     }
 }
