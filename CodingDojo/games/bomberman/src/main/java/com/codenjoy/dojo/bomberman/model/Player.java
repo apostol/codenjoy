@@ -55,7 +55,7 @@ public class Player extends GamePlayer<Hero, IField> {
     }
 
     public void newHero(IField board) {
-        hero = new Hero();
+        hero = new Hero(this);
         hero.init(board);
     }
 }

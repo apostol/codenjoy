@@ -28,6 +28,7 @@ import com.codenjoy.dojo.services.Direction;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Optional;
 
 public class PlayerLayer implements Iterable<Player> {
 
@@ -106,5 +107,9 @@ public class PlayerLayer implements Iterable<Player> {
 
     public void reset() {
         heroes.forEach(h->h.init(field));
+    }
+
+    public Optional<Player> getAt(int x, int y) {
+        return players.parallelStream().filter(w -> w.getHero().itsMe(x, y)).findFirst();
     }
 }
