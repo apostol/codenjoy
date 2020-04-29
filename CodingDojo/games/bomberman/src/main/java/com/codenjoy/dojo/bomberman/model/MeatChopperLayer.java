@@ -32,6 +32,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Optional;
 
 public class MeatChopperLayer implements Iterable<MeatChopper> {
 
@@ -159,8 +160,12 @@ public class MeatChopperLayer implements Iterable<MeatChopper> {
         return list.iterator();
     }
 
-	public List<MeatChopper> getList() {
-		return list;
-	}
+    public List<MeatChopper> getList() {
+        return list;
+    }
+
+    public Optional<MeatChopper> getAt(int x, int y) {
+        return list.parallelStream().filter(w -> w.itsMe(x, y)).findFirst();
+    }
 
 }

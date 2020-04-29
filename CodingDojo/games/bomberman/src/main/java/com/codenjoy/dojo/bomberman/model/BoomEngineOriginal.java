@@ -33,7 +33,6 @@ import com.codenjoy.dojo.bomberman.interfaces.IBoomEngine;
 public class BoomEngineOriginal implements IBoomEngine {
 
     private Hero bomberman;
-    private final List<Blast> blasts = new LinkedList<>();
 
     public BoomEngineOriginal(Hero bomberman) {
         this.bomberman = bomberman;
@@ -41,8 +40,10 @@ public class BoomEngineOriginal implements IBoomEngine {
 
     @Override
     public List<Blast> boom(List<? extends Point> barriers, int boardSize, Point source, int radius) {
+        List<Blast> blasts = new LinkedList<>();
 
-        addBlast(source.getX(), source.getY());
+        blasts.add(new Blast(source.getX(), source.getY(), bomberman));
+//        add(barriers, boardSize, blasts, source.getX(), source.getY(), radius);
 
         for (int dx = 1; dx <= radius; dx++) {
             int x = source.getX() + dx;
@@ -77,6 +78,7 @@ public class BoomEngineOriginal implements IBoomEngine {
                 break;
             }
         }
+
         return blasts;
     }
 
@@ -91,28 +93,18 @@ public class BoomEngineOriginal implements IBoomEngine {
             if (!barriers.get(index).getClass().equals(Wall.class)) {   //Стена
                 if (barriers.get(index).getClass().equals(Bomb.class)) {    //Детанация
                     barriers.remove(index);
-                    boom(barriers, boardSize, pt, radius);
+                    blasts.addAll(boom(barriers, boardSize, pt, radius));
                     return false;
                 }
-                addBlast(x, y);
+                blasts.add(new Blast(x, y, bomberman));
             }
             return false;
         }
-        addBlast(x, y);
+        blasts.add(new Blast(x, y, bomberman));
         return true;
     }
 
     private boolean isOnBoard(Point pt, int boardSize) {
         return pt.getX() >= 0 && pt.getY() >= 0 && pt.getX() < boardSize && pt.getY() < boardSize;
-    }
-
-    private void addBlast(int x, int y) {
-        if (!itsBlast(x, y)) {
-            blasts.add(new Blast(x, y, bomberman));
-        }
-    }
-
-    private boolean itsBlast(int x, int y) {
-        return blasts.stream().anyMatch(r->r.itsMe(x, y));
     }
 }

@@ -26,6 +26,8 @@ import com.codenjoy.dojo.bomberman.interfaces.IField;
 import com.codenjoy.dojo.bomberman.services.Events;
 import com.codenjoy.dojo.services.Point;
 
+import static java.util.stream.Collectors.toSet;
+
 import java.util.*;
 
 public class BombsLayer implements Iterable<Bomb> {
@@ -34,7 +36,7 @@ public class BombsLayer implements Iterable<Bomb> {
     private final IField field;
     private final LinkedList<Bomb> toDestroy = new LinkedList<>(); // список уничтоженных бомб - длительность 1 тик
 
-    private final List<Blast> blasts = new LinkedList<>(); // список взрывов - длительность 1 тик.
+    private final Map<Hero, Set<Blast>> blasts = new IdentityHashMap<>(); // список взрывов - длительность 1 тик.
 
     public BombsLayer(IField field) {
         this.field = field;
@@ -47,20 +49,15 @@ public class BombsLayer implements Iterable<Bomb> {
 
     public void update() {
         blasts.clear();
-        LinkedList<Point> barriers = new LinkedList<Point>() {{
-            addAll(field.getWallsLayer().getList());
-            addAll(field.getPlayerLayer().getHeroes());
-            addAll(field.getMeatChoppersLayer().getList());
-            addAll(field.getDestroyWallsLayer().getList());
-            addAll(bombs);
-        }}; //ограничители для взрыва бомбы. Собираем один раз, так как в этом потоке мы работаем только с бомбами и ничего более не меняем в ограничителях
-
         bombs.forEach(b -> b.tick());
+
+        toDestroy.forEach(bomb -> {
+            List<Blast> list = makeBlast(bomb);
+            Set<Blast> blastsSet = blasts.computeIfAbsent(bomb.getOwner(), (k) -> new TreeSet<>());
+            blastsSet.addAll(list);
+        });
         toDestroy.forEach(bomb -> {
             remove(bomb);
-            if (!itsBlast(bomb.getX(), bomb.getY())) { //Добавляем только если бомба еще не взорвалась.
-                blasts.addAll(makeBlast(bomb, barriers));
-            }
         });
         killAllNear(blasts);
         toDestroy.clear();
@@ -86,8 +83,10 @@ public class BombsLayer implements Iterable<Bomb> {
         return result;
     }
 
-    public List<Blast> getBlasts() {
-        return blasts;
+    public Collection<Point> getBlasts() {
+        return blasts.entrySet().parallelStream()
+                .flatMap((e) -> e.getValue().stream())
+                .collect(toSet());
     }
 
     public List<Bomb> getBombs() {
@@ -102,45 +101,51 @@ public class BombsLayer implements Iterable<Bomb> {
         toDestroy.add(bomb);
     }
 
-    private List<Blast> makeBlast(Bomb bomb, LinkedList<Point> barriers) {
+    public void regenerate() {
+        //тут тоже нечего генерировать
+    }
+
+    private List<Blast> makeBlast(Bomb bomb) {
+        LinkedList<Point> barriers = new LinkedList<>();// ограничители для взрыва бомбы.
+        barriers.addAll(field.getWallsLayer().getList());
+        barriers.addAll(bombs);
+        barriers.addAll(field.getPlayerLayer().getHeroes());
+        barriers.addAll(field.getMeatChoppersLayer().getList());
+        barriers.addAll(field.getDestroyWallsLayer().getList());
         return new BoomEngineOriginal(bomb.getOwner()).boom(barriers, field.getMapLayer().getSize(), bomb, bomb.getPower());
     }
 
-    private void killAllNear(List<Blast> blasts) {
-        for (Blast blast : blasts) {
-            for (Player dead : field.getPlayerLayer()) {
-                if (blast.itsMine(dead.getHero())) {
-                    if (field.getMeatChoppersLayer().itsMe(blast.getX(), blast.getY())) {
-                        dead.event(Events.KILL_MEAT_CHOPPER);
-                        Optional<MeatChopper> meat = field.getMeatChoppersLayer().getList().parallelStream().filter(w->w.itsMe(blast.getX(), blast.getY())).findFirst();
-                        if (meat.isPresent()) {
-                            field.getMeatChoppersLayer().addToDestroy(meat.get());
-                        }
+    private void killAllNear(Map<Hero, Set<Blast>> blastMap) {
+        blastMap.forEach((hero, blastSet) -> {
+            Player owner = hero.getPlayer();
+            boolean ownerAlive = (owner.getHero()==hero);
+            blastSet.forEach(blast -> {
+                field.getMeatChoppersLayer().getAt(blast.getX(), blast.getY()).ifPresent(meat -> {
+                    if (ownerAlive) {
+                        owner.event(Events.KILL_MEAT_CHOPPER);
                     }
-                    if (field.getDestroyWallsLayer().itsMe(blast.getX(), blast.getY())) {
-                        dead.event(Events.KILL_DESTROY_WALL);
+                    field.getMeatChoppersLayer().addToDestroy(meat);
+                });
+                field.getDestroyWallsLayer().getAt(blast.getX(), blast.getY()).ifPresent(dw -> {
+                    if (ownerAlive) {
+                        owner.event(Events.KILL_DESTROY_WALL);
                     }
-                }
-                if (dead.getHero().itsMe(blast)) {
+                    field.getDestroyWallsLayer().addToDestroy(dw);
+                });
+                field.getPlayerLayer().getAt(blast.getX(), blast.getY()).ifPresent(dead -> {
                     dead.event(Events.KILL_BOMBERMAN);
-                    for (Player bombOwner : field.getPlayerLayer()) {
-                        if (dead != bombOwner && blast.itsMine(bombOwner.getHero())) {
-                            bombOwner.event(Events.KILL_OTHER_BOMBERMAN);
-                        }
+                    if (dead != owner && ownerAlive) {
+                        owner.event(Events.KILL_OTHER_BOMBERMAN);
                     }
-                }
-            }
-
-            Optional<DestroyWall> dw = field.getDestroyWallsLayer().getList().parallelStream().filter(w->w.itsMe(blast.getX(), blast.getY())).findFirst();
-            if (dw.isPresent()) {
-                field.getDestroyWallsLayer().addToDestroy(dw.get());
-            }
-            Optional<Bomb> _b = bombs.parallelStream().filter(b->b.itsMe(blast)).findFirst();
-            if (_b.isPresent()) {
-                bombs.remove(_b.get());
-            }
-        }
+                });
+                bombs.parallelStream().filter(b -> b.itsMe(blast)).findFirst().ifPresent(bomb -> {
+                    bombs.remove(bomb);
+                });
+            });
+        });
     }
+
+
 
     private boolean existAtPlace(int x, int y) {
         for (Bomb bomb : bombs) {
@@ -155,9 +160,5 @@ public class BombsLayer implements Iterable<Bomb> {
         bombs.clear();
         blasts.clear();
         toDestroy.clear();
-    }
-
-    private boolean itsBlast(int x, int y) {
-        return blasts.stream().anyMatch(r->r.itsMe(x, y));
     }
 }

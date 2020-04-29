@@ -29,6 +29,7 @@ import com.codenjoy.dojo.bomberman.interfaces.IField;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Optional;
 
 public class DestroyWallLayer implements Iterable<DestroyWall> {
 
@@ -80,6 +81,10 @@ public class DestroyWallLayer implements Iterable<DestroyWall> {
 
     public void addToDestroy(DestroyWall destroyWall) {
       toDestroyList.add(destroyWall);
+    }
+
+    public Optional<DestroyWall> getAt(int x, int y) {
+        return destroyWalls.parallelStream().filter(w -> w.itsMe(x, y)).findFirst();
     }
 
 }

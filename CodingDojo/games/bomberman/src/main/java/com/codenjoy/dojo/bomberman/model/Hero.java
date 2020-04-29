@@ -34,13 +34,15 @@ import java.util.List;
 public class Hero extends PlayerHero<IField> implements State<Elements, Player> {
 
     private static final boolean WITHOUT_MEAT_CHOPPER = false;
+    private final Player player;
     private boolean alive;
     private boolean bomb;
     private Direction direction;
     private boolean collision;
 
-    public Hero() {
+    public Hero(Player player) {
         super(-1, -1);
+        this.player = player;
         alive = true;
         direction = null;
     }
@@ -184,6 +186,10 @@ public class Hero extends PlayerHero<IField> implements State<Elements, Player> 
     @Override
     public void setY(int y) {
         this.y = y;
+    }
+
+    public Player getPlayer() {
+        return player;
     }
 }
 
