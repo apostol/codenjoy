@@ -50,13 +50,14 @@ public class BombsLayer implements Iterable<Bomb> {
     public void update() {
         blasts.clear();
         bombs.forEach(b -> b.tick());
-        toDestroy.forEach(bomb -> {
-            remove(bomb);
-        });
+
         toDestroy.forEach(bomb -> {
             List<Blast> list = makeBlast(bomb);
             Set<Blast> blastsSet = blasts.computeIfAbsent(bomb.getOwner(), (k) -> new TreeSet<>());
             blastsSet.addAll(list);
+        });
+        toDestroy.forEach(bomb -> {
+            remove(bomb);
         });
         killAllNear(blasts);
         toDestroy.clear();

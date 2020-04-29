@@ -49,9 +49,13 @@ public class Player extends GamePlayer<Hero, IField> {
 
     public void event(Events event) {
         if (event == Events.KILL_BOMBERMAN) {
+            if (hero.isAlive()) {
+                super.event(event);
+            }
             hero.kill();
+        } else {
+            super.event(event);
         }
-        super.event(event);
     }
 
     public void newHero(IField board) {
