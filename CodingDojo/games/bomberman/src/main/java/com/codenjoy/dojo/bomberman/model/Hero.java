@@ -33,10 +33,12 @@ import java.util.List;
 
 public class Hero extends PlayerHero<IField> implements State<Elements, Player> {
 
+    private static enum Order {NONE, BEFORE, AFTER};
+
     private static final boolean WITHOUT_MEAT_CHOPPER = false;
     private final Player player;
     private boolean alive;
-    private boolean bomb;
+    private Order bomb;
     private Direction direction;
     private boolean collision;
 
@@ -45,6 +47,7 @@ public class Hero extends PlayerHero<IField> implements State<Elements, Player> 
         this.player = player;
         alive = true;
         direction = null;
+        bomb = Order.NONE;
     }
 
     public void init(IField field) {
@@ -83,14 +86,18 @@ public class Hero extends PlayerHero<IField> implements State<Elements, Player> 
         if (!alive) return;
 
         if (direction != null) {
-            bomb = true;
+            bomb = Order.AFTER;
         } else {
-            setBomb(x, y);
+            bomb = Order.BEFORE;
         }
     }
 
     public void apply() {
         if (!alive) return;
+        if (bomb == Order.BEFORE) {
+            setBomb(x, y);
+            bomb = Order.NONE;
+        }
         if (direction == null) {
             return;
         }
@@ -102,9 +109,9 @@ public class Hero extends PlayerHero<IField> implements State<Elements, Player> 
         }
         collision = false;
         direction = null;
-        if (bomb) {
+        if (bomb == Order.AFTER) {
             setBomb(x, y);
-            bomb = false;
+            bomb = Order.NONE;
         }
     }
 
