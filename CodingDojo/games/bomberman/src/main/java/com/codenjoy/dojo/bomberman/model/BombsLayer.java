@@ -118,18 +118,23 @@ public class BombsLayer implements Iterable<Bomb> {
     private void killAllNear(Map<Hero, Set<Blast>> blastMap) {
         blastMap.forEach((hero, blastSet) -> {
             Player owner = hero.getPlayer();
+            boolean ownerAlive = (owner.getHero()==hero);
             blastSet.forEach(blast -> {
                 field.getMeatChoppersLayer().getAt(blast.getX(), blast.getY()).ifPresent(meat -> {
-                    owner.event(Events.KILL_MEAT_CHOPPER);
+                    if (ownerAlive) {
+                        owner.event(Events.KILL_MEAT_CHOPPER);
+                    }
                     field.getMeatChoppersLayer().addToDestroy(meat);
                 });
                 field.getDestroyWallsLayer().getAt(blast.getX(), blast.getY()).ifPresent(dw -> {
-                    owner.event(Events.KILL_DESTROY_WALL);
+                    if (ownerAlive) {
+                        owner.event(Events.KILL_DESTROY_WALL);
+                    }
                     field.getDestroyWallsLayer().addToDestroy(dw);
                 });
                 field.getPlayerLayer().getAt(blast.getX(), blast.getY()).ifPresent(dead -> {
                     dead.event(Events.KILL_BOMBERMAN);
-                    if (dead != owner) {
+                    if (dead != owner && ownerAlive) {
                         owner.event(Events.KILL_OTHER_BOMBERMAN);
                     }
                 });
