@@ -23,23 +23,28 @@ package com.codenjoy.dojo.snakebattle.model;
  */
 
 
-import com.codenjoy.dojo.services.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
+import static org.mockito.Mockito.mock;
+
+import com.codenjoy.dojo.services.Dice;
+import com.codenjoy.dojo.services.EventListener;
+import com.codenjoy.dojo.services.Point;
 import com.codenjoy.dojo.services.settings.SimpleParameter;
 import com.codenjoy.dojo.snakebattle.model.board.SnakeBoard;
 import com.codenjoy.dojo.snakebattle.model.board.Timer;
 import com.codenjoy.dojo.snakebattle.model.hero.Hero;
 import com.codenjoy.dojo.snakebattle.model.level.LevelImpl;
-import com.codenjoy.dojo.snakebattle.model.objects.*;
+import com.codenjoy.dojo.snakebattle.model.objects.Apple;
+import com.codenjoy.dojo.snakebattle.model.objects.FlyingPill;
+import com.codenjoy.dojo.snakebattle.model.objects.FuryPill;
+import com.codenjoy.dojo.snakebattle.model.objects.Gold;
+import com.codenjoy.dojo.snakebattle.model.objects.Stone;
+import java.util.Arrays;
+import java.util.Collection;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
-
-import java.util.Arrays;
-import java.util.Collection;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
-import static org.mockito.Mockito.mock;
 
 /**
  * @author K.ilya
@@ -68,7 +73,9 @@ public class BoardAddObjectsTest {
                 new SimpleParameter<>(10),
                 new SimpleParameter<>(10),
                 new SimpleParameter<>(3),
-                new SimpleParameter<>(2));
+                new SimpleParameter<>(2),
+                new SimpleParameter<>(0),
+                new SimpleParameter<>(0));
 
         Hero hero = level.getHero(game);
 

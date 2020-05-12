@@ -116,7 +116,6 @@ public class SmokeTest {
                 return dice;
             }
 
-            @Override
             protected String getMap() {
                 return  "☼☼☼☼☼☼☼☼☼" +
                         "☼☼      ☼" +

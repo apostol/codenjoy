@@ -23,24 +23,36 @@ package com.codenjoy.dojo.snakebattle.model.board;
  */
 
 
-import com.codenjoy.dojo.services.*;
+import static com.codenjoy.dojo.services.PointImpl.pt;
+import static com.codenjoy.dojo.snakebattle.model.hero.Hero.NEXT_TICK;
+import static java.util.stream.Collectors.toList;
+
+import com.codenjoy.dojo.services.BoardUtils;
+import com.codenjoy.dojo.services.Dice;
+import com.codenjoy.dojo.services.Direction;
+import com.codenjoy.dojo.services.Point;
 import com.codenjoy.dojo.services.printer.BoardReader;
 import com.codenjoy.dojo.services.settings.Parameter;
 import com.codenjoy.dojo.snakebattle.model.Player;
 import com.codenjoy.dojo.snakebattle.model.hero.Hero;
 import com.codenjoy.dojo.snakebattle.model.level.Level;
-import com.codenjoy.dojo.snakebattle.model.objects.*;
+import com.codenjoy.dojo.snakebattle.model.objects.Apple;
+import com.codenjoy.dojo.snakebattle.model.objects.FlyingPill;
+import com.codenjoy.dojo.snakebattle.model.objects.FuryPill;
+import com.codenjoy.dojo.snakebattle.model.objects.Gold;
+import com.codenjoy.dojo.snakebattle.model.objects.StartFloor;
+import com.codenjoy.dojo.snakebattle.model.objects.Stone;
+import com.codenjoy.dojo.snakebattle.model.objects.Wall;
 import com.codenjoy.dojo.snakebattle.services.Events;
-import org.apache.commons.lang3.StringUtils;
-
-import java.util.*;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.LinkedHashSet;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
-
-import static com.codenjoy.dojo.services.PointImpl.pt;
-import static com.codenjoy.dojo.snakebattle.model.hero.Hero.NEXT_TICK;
-import static java.util.stream.Collectors.toList;
+import org.apache.commons.lang3.StringUtils;
 
 public class SnakeBoard implements Field {
 
@@ -65,16 +77,23 @@ public class SnakeBoard implements Field {
     private Parameter<Integer> furyCount;
     private Parameter<Integer> stoneReduced;
     private Parameter<Integer> minTicksForWin;
+    private Parameter<Integer> furyPillsPerTick;
+    private Parameter<Integer> flyingPillsPerTick;
 
     private int size;
     private Dice dice;
 
-    public SnakeBoard(Level level, Dice dice, Timer startTimer, Timer roundTimer, Timer winnerTimer, Parameter<Integer> roundsPerMatch, Parameter<Integer> flyingCount, Parameter<Integer> furyCount, Parameter<Integer> stoneReduced, Parameter<Integer> minTicksForWin) {
+    public SnakeBoard(Level level, Dice dice, Timer startTimer, Timer roundTimer, Timer winnerTimer,
+        Parameter<Integer> roundsPerMatch, Parameter<Integer> flyingCount, Parameter<Integer> furyCount,
+        Parameter<Integer> stoneReduced, Parameter<Integer> minTicksForWin,
+        Parameter<Integer> furyPillsPerTick, Parameter<Integer> flyingPillsPerTick) {
         this.flyingCount = flyingCount;
         this.furyCount = furyCount;
         this.stoneReduced = stoneReduced;
         this.roundsPerMatch = roundsPerMatch;
         this.minTicksForWin = minTicksForWin;
+        this.furyPillsPerTick = furyPillsPerTick;
+        this.flyingPillsPerTick = flyingPillsPerTick;
 
         this.dice = dice;
         round = 0;
@@ -184,9 +203,9 @@ public class SnakeBoard implements Field {
     private void setNewObjects() {
         int max = (players.size() / 2) + 1;
         int i = dice.next(50);
-        if (i == 42 && furyPills.size() < max)
+        if (furyPills.size() < furyPillsPerTick.getValue() && furyPills.size() < max)
             setFuryPill(getFreeRandom());
-        if (i == 32 && flyingPills.size() < max)
+        if (flyingPills.size() < flyingPillsPerTick.getValue() && flyingPills.size() < max)
             setFlyingPill(getFreeRandom());
         if (i == 21 && gold.size() < max*2)
             setGold(getFreeRandom());
@@ -279,12 +298,12 @@ public class SnakeBoard implements Field {
                 if (hero.isFury() && !enemy.isFury()) {
                     if (enemy.isAlive()) {
                         enemy.die();
-                        info.cutOff(hero, enemy, enemy.size());
+                        info.cutOff(hero, enemy, enemy.size()); //?
                     }
                 } else if (!hero.isFury() && enemy.isFury()) {
                     if (hero.isAlive()) {
                         hero.die();
-                        info.cutOff(enemy, hero, hero.size());
+                        info.cutOff(enemy, hero, hero.size()); //?
                     }
                 } else {
                     if (!info.alreadyCut(hero)) {

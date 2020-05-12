@@ -23,8 +23,15 @@ package com.codenjoy.dojo.snakebattle.client.ai;
  */
 
 
+import static com.codenjoy.dojo.services.Direction.RIGHT;
+import static com.codenjoy.dojo.services.Direction.UP;
+import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.mock;
+
 import com.codenjoy.dojo.client.Solver;
-import com.codenjoy.dojo.services.*;
+import com.codenjoy.dojo.services.Dice;
+import com.codenjoy.dojo.services.Direction;
+import com.codenjoy.dojo.services.EventListener;
 import com.codenjoy.dojo.services.printer.PrinterFactory;
 import com.codenjoy.dojo.services.printer.PrinterFactoryImpl;
 import com.codenjoy.dojo.services.settings.SimpleParameter;
@@ -36,11 +43,6 @@ import com.codenjoy.dojo.snakebattle.model.hero.Hero;
 import com.codenjoy.dojo.snakebattle.model.level.LevelImpl;
 import org.junit.Before;
 import org.junit.Test;
-
-import static com.codenjoy.dojo.services.Direction.RIGHT;
-import static com.codenjoy.dojo.services.Direction.UP;
-import static org.junit.Assert.assertEquals;
-import static org.mockito.Mockito.mock;
 
 /**
  * @author Kors
@@ -76,7 +78,10 @@ public class AISolverTest {
                 new SimpleParameter<>(10),
                 new SimpleParameter<>(10),
                 new SimpleParameter<>(3),
-                new SimpleParameter<>(2));
+                new SimpleParameter<>(2),
+                new SimpleParameter<>(0),
+                new SimpleParameter<>(0)
+            );
 
         Hero hero = level.getHero(game);
         EventListener listener = mock(EventListener.class);

@@ -23,6 +23,10 @@ package com.codenjoy.dojo.snakebattle.model;
  */
 
 
+import static com.codenjoy.dojo.snakebattle.model.SnakeMultiplayerTest.verifyEvents;
+import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.mock;
+
 import com.codenjoy.dojo.services.Dice;
 import com.codenjoy.dojo.services.EventListener;
 import com.codenjoy.dojo.services.printer.PrinterFactory;
@@ -35,10 +39,6 @@ import com.codenjoy.dojo.snakebattle.model.level.LevelImpl;
 import com.codenjoy.dojo.utils.TestUtils;
 import org.junit.Before;
 import org.junit.Test;
-
-import static com.codenjoy.dojo.snakebattle.model.SnakeMultiplayerTest.verifyEvents;
-import static org.junit.Assert.assertEquals;
-import static org.mockito.Mockito.mock;
 
 /**
  * @author Kors
@@ -75,7 +75,9 @@ public class SnakeBoardTest {
                 new SimpleParameter<>(10),
                 new SimpleParameter<>(10),
                 new SimpleParameter<>(3),
-                new SimpleParameter<>(2));
+                new SimpleParameter<>(2),
+                new SimpleParameter<>(0),
+                new SimpleParameter<>(0));
 
         Hero hero = level.getHero(game);
         listener = mock(EventListener.class);
