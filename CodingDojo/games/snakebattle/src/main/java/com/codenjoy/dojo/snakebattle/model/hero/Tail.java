@@ -40,12 +40,12 @@ public class Tail extends PointImpl implements State<Elements, Object> {
     private Hero snake;
 
     Tail(Point xy, Hero snake) {
-        super(xy.getX(), xy.getY());
+        super(pt(xy.getX(), xy.getY()));
         this.snake = snake;
     }
 
     Tail(int x, int y, Hero snake) {
-        super(x, y);
+        super(pt(x, y));
         this.snake = snake;
     }
 
@@ -239,4 +239,23 @@ public class Tail extends PointImpl implements State<Elements, Object> {
         return snake.itsMyTail(this);
     }
 
+    @Override
+    public int getX() {
+        return this.x;
+    }
+
+    @Override
+    public int getY() {
+        return this.y;
+    }
+
+    @Override
+    public void setX(int x) {
+        this.x = x;
+    }
+
+    @Override
+    public void setY(int y) {
+        this.y = y;
+    }
 }

@@ -100,6 +100,16 @@ public class Hero extends PlayerHero<Field> implements State<LinkedList<Tail>, P
     }
 
     @Override
+    public void setX(int x) {
+        head().setX(x);
+    }
+
+    @Override
+    public void setY(int y) {
+        head().setY(y);
+    }
+
+    @Override
     public boolean equals(Object o) {
         if (o == this) {
             return true;

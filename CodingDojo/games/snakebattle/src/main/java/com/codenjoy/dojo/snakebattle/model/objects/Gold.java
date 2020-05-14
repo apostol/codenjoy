@@ -39,11 +39,30 @@ public class Gold extends PointImpl implements State<Elements, Player> {
     }
 
     public Gold(int x, int y) {
-        super(x, y);
+        super(pt(x, y));
     }
 
     @Override
     public Elements state(Player player, Object... alsoAtPoint) {
         return Elements.GOLD;
+    }
+    @Override
+    public int getX() {
+        return this.x;
+    }
+
+    @Override
+    public int getY() {
+        return this.y;
+    }
+
+    @Override
+    public void setX(int x) {
+        this.x = x;
+    }
+
+    @Override
+    public void setY(int y) {
+        this.y = y;
     }
 }

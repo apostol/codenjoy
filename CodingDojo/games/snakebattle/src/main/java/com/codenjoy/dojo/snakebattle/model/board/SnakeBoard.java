@@ -196,7 +196,6 @@ public class SnakeBoard implements Field {
     @Override
     public void clearScore() {
         round = 0;
-
         players.forEach(p -> newGame(p));
     }
 
