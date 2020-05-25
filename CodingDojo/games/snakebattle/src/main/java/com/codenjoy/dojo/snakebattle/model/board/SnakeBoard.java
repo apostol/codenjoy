@@ -242,6 +242,7 @@ public class SnakeBoard implements Field {
                 .collect(toList());
     }
 
+    /**Вызываем метод tick у каждой живой змейки*/
     private void snakesMove() {
         for (Player player : aliveActive()) {
             Hero hero = player.getHero();
@@ -285,6 +286,16 @@ public class SnakeBoard implements Field {
         }
     }
 
+    /**Обработка столкновений между змейками.
+     * Для каждой нелетающей змейки находим, есть ли змейки, на голову которых зашла головой текущая змейка.
+     * Если таковая имеется, то проверяем, что если противник летает - то всё ок, ему ничего не будет.
+     * Если текущая змейка в ярости, а вражеская нет - то убиваем вражескую змейку.
+     * Если текущая змейка не в ярости, а вражеская в ярости - то убиваем текущую змейку.
+     * Если обе змейки в ярости или обе не в ярости - то от каждой отрезаем длину другой змейки, но на следующем ходу, то есть просто сохраняем это значение в growBy.
+     * Если не было змейки, на голову которой зашла головой текущая змейка - то ищем змейку, на тушку которой зашла текущая змейка.
+     * Если таковые имеются, то тогда проверяем, а текущая змейка под таблеткой ярости.
+     * Если да - тогда от вражеской змейки отгрызаем всё от хвоста до места куся.
+     * Если нет - то текущая змейка погибает.*/
     private void snakesFight() {
         FightDetails info = new FightDetails();
 
@@ -330,7 +341,7 @@ public class SnakeBoard implements Field {
             }
         });
 
-        info.forEach((attacker, pray, reduce) -> {
+        info.forEach((attacker, prey, reduce) -> {
             if (attacker.isAlive()) {
                 attacker.event(Events.EAT.apply(reduce));
             }
@@ -507,6 +518,8 @@ public class SnakeBoard implements Field {
         return stoneReduced;
     }
 
+    /**Найти всех змеек, головой с которыми пересеклась текущая змейка.
+     * Под головой понимается как непосредственно голова, так и предыдущая ей клетка.*/
     private Hero enemyCrossedWith(Hero me) {
         return aliveEnemies(me)
                 .filter(h -> me.isHeadIntersect(h))

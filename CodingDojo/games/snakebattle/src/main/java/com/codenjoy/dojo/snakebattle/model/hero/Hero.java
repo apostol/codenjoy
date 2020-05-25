@@ -196,6 +196,7 @@ public class Hero extends PlayerHero<Field> implements State<LinkedList<Tail>, P
         }
     }
 
+    /**Проверяем, что змейка активна и жива*/
     private boolean isActiveAndAlive() {
         return active && alive;
     }
@@ -213,7 +214,7 @@ public class Hero extends PlayerHero<Field> implements State<LinkedList<Tail>, P
         applyNewDirection();
 
         reduceIfShould();
-        count();
+        decreaseCountOfRemainingTickForActiveTablets();
 
         Point next = getNextPoint();
         if (isMe(next) && !isFlying())
@@ -222,6 +223,8 @@ public class Hero extends PlayerHero<Field> implements State<LinkedList<Tail>, P
         go(next);
     }
 
+    /**Проверяем, что новое направление движения есть и при этом не является разворотом на 180 градусов от старого движения.
+     * Если это всё так - то меняем направление движения на новое*/
     private void applyNewDirection() {
         if (newDirection != null && !newDirection.equals(direction.inverted())) {
             direction = newDirection;
@@ -231,6 +234,11 @@ public class Hero extends PlayerHero<Field> implements State<LinkedList<Tail>, P
 
     // Этот метод должен вызываться отдельно от tick,
     // уже после обработки столкновений с другими змейками
+    /**Проверяем позицию головы змейки.
+     * Если там находится яблоко - то увеличиваем длину змейку на 1 немедленно.
+     * Если там находится камень и змейка при этом не летит - то увеличиваем количество съеденных камней на 1 и сокращаем текущую длину змейки немедленно.
+     * Если там находится таблетка ярости или таблетка полёта - тогда съедаем их.
+     * Если там находится стена - тогда змейка погибает немедленно.*/
     public void eat() {
         if (!isActiveAndAlive()) {
             return;
@@ -268,7 +276,8 @@ public class Hero extends PlayerHero<Field> implements State<LinkedList<Tail>, P
         furyCount += field.furyCount().getValue();
     }
 
-    public void count() {
+    /** Уменьшаем количество оставшихся тиков для таблеток полёта и ярости */
+    public void decreaseCountOfRemainingTickForActiveTablets() {
         if (isFlying()) {
             flyingCount--;
         }
@@ -277,6 +286,8 @@ public class Hero extends PlayerHero<Field> implements State<LinkedList<Tail>, P
         }
     }
 
+    /**Если у нас был задан размер сокращения размера змейки - то пытаемся сократить её с хвоста на размер growBy.
+     * При этом происходит проверка того, а может ли змейка пережить такое сокращение длины.*/
     private void reduceIfShould() {
         if (growBy < 0) {
             if (growBy < -elements.size()) {
@@ -289,6 +300,7 @@ public class Hero extends PlayerHero<Field> implements State<LinkedList<Tail>, P
         }
     }
 
+    /**Сокращаем тушку змейки, оставляя все точки, начиная с переданной и дальше идём к голове змейки, остальные точки выкидываем.*/
     private void selfReduce(Point from) {
         if (from.equals(getTailPoint()))
             return;
@@ -324,6 +336,7 @@ public class Hero extends PlayerHero<Field> implements State<LinkedList<Tail>, P
         }
     }
 
+    /**Получаем следующую точку в направлении движения*/
     public Point getNextPoint() {
         return getPointAt(head(), direction);
     }
@@ -406,6 +419,7 @@ public class Hero extends PlayerHero<Field> implements State<LinkedList<Tail>, P
         return head() == point;
     }
 
+    /**Проверяем, что точка пересекается с любой из точек, которые принадлежат тушке змейки.*/
     boolean isMe(Point next) {
         return elements.contains(next);
     }

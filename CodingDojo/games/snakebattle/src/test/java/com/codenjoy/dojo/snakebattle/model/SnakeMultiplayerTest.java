@@ -3003,13 +3003,13 @@ public class SnakeMultiplayerTest {
         game.tick();
         game.tick();
 
-        hero.count();
-        hero.count();
-        hero.count();
-        hero.count();
+        hero.decreaseCountOfRemainingTickForActiveTablets();
+        hero.decreaseCountOfRemainingTickForActiveTablets();
+        hero.decreaseCountOfRemainingTickForActiveTablets();
+        hero.decreaseCountOfRemainingTickForActiveTablets();
         assertEquals(2, hero.getFuryCount());
         assertEquals(2, hero.getFlyingCount());
-        hero.count();
+        hero.decreaseCountOfRemainingTickForActiveTablets();
         assertEquals(1, hero.getFuryCount());
         assertEquals(1, hero.getFlyingCount());
 
@@ -3335,14 +3335,14 @@ public class SnakeMultiplayerTest {
                 "☼☼                           ☼\n" +
                 "☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼\n");
 
-        hero.count();
-        hero.count();
-        hero.count();
-        hero.count();
-        hero.count();
-        hero.count();
+        hero.decreaseCountOfRemainingTickForActiveTablets();
+        hero.decreaseCountOfRemainingTickForActiveTablets();
+        hero.decreaseCountOfRemainingTickForActiveTablets();
+        hero.decreaseCountOfRemainingTickForActiveTablets();
+        hero.decreaseCountOfRemainingTickForActiveTablets();
+        hero.decreaseCountOfRemainingTickForActiveTablets();
         assertEquals(1, hero.getFlyingCount());
-        hero.count();
+        hero.decreaseCountOfRemainingTickForActiveTablets();
         assertEquals(0, hero.getFlyingCount());
 
         game.tick();
