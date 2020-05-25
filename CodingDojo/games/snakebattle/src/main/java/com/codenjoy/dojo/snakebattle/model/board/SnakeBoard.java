@@ -133,7 +133,6 @@ public class SnakeBoard implements Field {
 
         if (roundTimer.justFinished()) {
             rewardWinnersByTimeout();
-
             startTimer.start();
             return;
         }
@@ -143,7 +142,6 @@ public class SnakeBoard implements Field {
             if (isLastOnBoard()) {
                 reset(getLast());
             }
-
             startTimer.start();
             return;
         }
@@ -241,7 +239,9 @@ public class SnakeBoard implements Field {
         theWalkingDead.clear();
         if (isLastOnBoard()) {
             if (roundTimer.time() >= minTicksForWin.getValue()) {
-                getLast().event(Events.WIN);
+                Player p = getLast();
+                p.event(Events.WIN);
+                reset(p);
             }
         }
     }
