@@ -238,11 +238,9 @@ public class SnakeBoard implements Field {
 
         theWalkingDead.clear();
         if (isLastOnBoard()) {
-            if (roundTimer.time() >= minTicksForWin.getValue()) {
                 Player p = getLast();
                 p.event(Events.WIN);
                 reset(p);
-            }
         }
     }
 
