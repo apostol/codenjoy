@@ -148,7 +148,6 @@ public class GameRunner extends AbstractGameType implements GameType {
         if (virtualRooms.getValue()) {
             return MultiplayerType.TEAM.apply(playersPerRoom.getValue(), MultiplayerType.DISPOSABLE);
         }
-
         return MultiplayerType.MULTIPLE;
     }
 

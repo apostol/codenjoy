@@ -220,11 +220,25 @@ public class SnakeBoard implements Field {
     }
 
     private void rewardTheWinner() {
+        Integer max = aliveActive().stream()
+            .map(p -> p.getHero().size())
+            .max(Comparator.comparingInt(i1 -> i1))
+            .orElse(Integer.MAX_VALUE);
+
+        if(max == minTicksForWin.getValue()) {
+            aliveActive().forEach(p -> {
+                if (p.getHero().size() == minTicksForWin.getValue()) {
+                    p.event(Events.WIN);
+                }
+                reset(p);
+            });
+        }
+
         if (theWalkingDead.isEmpty()) {
             return;
         }
-        theWalkingDead.clear();
 
+        theWalkingDead.clear();
         if (isLastOnBoard()) {
             if (roundTimer.time() >= minTicksForWin.getValue()) {
                 getLast().event(Events.WIN);
