@@ -24,12 +24,13 @@ package com.codenjoy.dojo.snakebattle.services;
 
 
 import java.util.Objects;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 
 public class Events {
 
     public static final Events START = new Events("START");
-    public static final Events WIN = new Events("WIN");
+    public static final BiFunction<Integer, Integer, Events> WIN = (amount, ticks) -> new Events("WIN", amount, ticks);
     public static final Events DIE = new Events("DIE");
     public static final Events APPLE = new Events("APPLE");
     public static final Events STONE = new Events("STONE");
@@ -38,17 +39,25 @@ public class Events {
 
     private String type;
     private int amount;
+    private int ticks;
 
     public Events(String type) {
         this.type = type;
         this.amount = 1;
+        this.ticks = 0;
     }
 
     public Events(String type, int amount) {
         this.type = type;
         this.amount = amount;
+        this.ticks = 0;
     }
 
+    public Events(String type, int amount, int ticks) {
+        this.type = type;
+        this.amount = amount;
+        this.ticks = ticks;
+    }
 
     @Override
     public boolean equals(Object o) {
@@ -68,7 +77,7 @@ public class Events {
     }
 
     public boolean isWin() {
-        return type.equals(WIN.type);
+        return type.equals(WIN.apply(0, 0).type);
     }
 
     public boolean isApple() {
@@ -93,6 +102,9 @@ public class Events {
 
     public int getAmount() {
         return amount;
+    }
+    public int getTicks() {
+        return ticks;
     }
 
     @Override

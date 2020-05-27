@@ -170,7 +170,7 @@ public class SnakeBoard implements Field {
                     if (p.getHero().size() == max
                         && roundTimer.time() > minTicksForWin.getValue())
                     {
-                        p.event(Events.WIN);
+                        p.event(Events.WIN.apply(max, roundTimer.countdown()));
                     } else {
                         p.printMessage("Time is over");
                     }
@@ -226,7 +226,7 @@ public class SnakeBoard implements Field {
         if(max == minTicksForWin.getValue()) {
             aliveActive().forEach(p -> {
                 if (p.getHero().size() == minTicksForWin.getValue()) {
-                    p.event(Events.WIN);
+                    p.event(Events.WIN.apply(p.getHero().size(), roundTimer.countdown()));
                 }
                 reset(p);
             });
@@ -239,7 +239,7 @@ public class SnakeBoard implements Field {
         theWalkingDead.clear();
         if (isLastOnBoard()) {
                 Player p = getLast();
-                p.event(Events.WIN);
+                p.event(Events.WIN.apply(p.getHero().size(), roundTimer.countdown()));
                 reset(p);
         }
     }

@@ -35,18 +35,24 @@ public class Scores implements PlayerScores {
     private final Parameter<Integer> diePenalty;
     private final Parameter<Integer> stoneScore;
     private final Parameter<Integer> eatScore;
+    private final Parameter<Integer> winTimeScore;
+    private final Parameter<Integer> winLengthScore;
+    private final Parameter<Integer> winTicks;
 
     private volatile int score;
 
     public Scores(int startScore, Settings settings) {
         this.score = startScore;
 
-        winScore = settings.addEditBox("Win score").type(Integer.class).def(50);
+        winScore = settings.addEditBox("Win score").type(Integer.class).def(110);
         appleScore = settings.addEditBox("Apple score").type(Integer.class).def(1);
         goldScore = settings.addEditBox("Gold score").type(Integer.class).def(10);
         diePenalty = settings.addEditBox("Die penalty").type(Integer.class).def(0);
         stoneScore = settings.addEditBox("Stone score").type(Integer.class).def(5);
         eatScore = settings.addEditBox("Eat enemy score").type(Integer.class).def(10);
+        winTimeScore = settings.addEditBox("Win Time Score per cell").type(Integer.class).def(10);
+        winLengthScore = settings.addEditBox("Win Length Score per cell").type(Integer.class).def(10);
+        winTicks = settings.addEditBox("Time per Round").type(Integer.class).def(300);
     }
 
     @Override
@@ -65,7 +71,7 @@ public class Scores implements PlayerScores {
             return;
         Events event = (Events)object;
         if (event.isWin()) {
-            score += winScore.getValue();
+            score += winScore.getValue() + winLengthScore.getValue()*event.getAmount() + winTimeScore.getValue()*(winTicks.getValue() - event.getTicks());
         } else if (event.isApple()) {
             score += appleScore.getValue();
         } else if (event.isGold()) {
