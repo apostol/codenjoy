@@ -89,7 +89,9 @@ public class SnakeMultiplayerTest {
                 new SimpleParameter<>(3),
                 minTicksForWin,
                 new SimpleParameter<>(0),
-                new SimpleParameter<>(0));
+                new SimpleParameter<>(0),
+                new SimpleParameter<>(10)
+            );
 
         Hero hero = level.getHero(game);
         hero.setActive(true);

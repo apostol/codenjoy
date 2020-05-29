@@ -75,7 +75,8 @@ public class BoardAddObjectsTest {
                 new SimpleParameter<>(3),
                 new SimpleParameter<>(2),
                 new SimpleParameter<>(0),
-                new SimpleParameter<>(0));
+                new SimpleParameter<>(0),
+                new SimpleParameter<>(10));
 
         Hero hero = level.getHero(game);
 
