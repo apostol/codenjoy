@@ -61,6 +61,7 @@ public class GameRunner extends AbstractGameType implements GameType {
     private final Parameter<Integer> minTicksForWin;
     private final Parameter<Integer> timePerRound;
     private final Parameter<Integer> timeForWinner;
+    private final Parameter<Integer> furyPillsMax;
     private final Parameter<Boolean> virtualRooms;
     private final Parameter<String> mapPath;
     private final Parameter<String> levelSize;
@@ -76,6 +77,7 @@ public class GameRunner extends AbstractGameType implements GameType {
         flyingPillsPerTick = settings.addEditBox("Flying pills count per tick").type(Integer.class).def(0);
         furyCount = settings.addEditBox("Fury count").type(Integer.class).def(10);
         furyPillsPerTick = settings.addEditBox("Fury pills count per tick").type(Integer.class).def(3);
+        furyPillsMax = settings.addEditBox("Fury pills Max count").type(Integer.class).def(10);
         stoneReducedValue = settings.addEditBox("Stone reduced value").type(Integer.class).def(3);
         minTicksForWin = settings.addEditBox("Min length for win").type(Integer.class).def(40);
         virtualRooms = settings.addCheckBox("Virtual rooms for training").type(Boolean.class).def(true);
@@ -97,7 +99,8 @@ public class GameRunner extends AbstractGameType implements GameType {
                 stoneReducedValue,
                 minTicksForWin,
                 furyPillsPerTick,
-                flyingPillsPerTick
+                flyingPillsPerTick,
+                furyPillsMax
             );
     }
 

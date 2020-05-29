@@ -79,6 +79,7 @@ public class SnakeBoard implements Field {
     private Parameter<Integer> minTicksForWin;
     private Parameter<Integer> furyPillsPerTick;
     private Parameter<Integer> flyingPillsPerTick;
+    private Parameter<Integer> furyPillsMax;
 
     private int size;
     private Dice dice;
@@ -86,7 +87,7 @@ public class SnakeBoard implements Field {
     public SnakeBoard(Level level, Dice dice, Timer startTimer, Timer roundTimer, Timer winnerTimer,
         Parameter<Integer> roundsPerMatch, Parameter<Integer> flyingCount, Parameter<Integer> furyCount,
         Parameter<Integer> stoneReduced, Parameter<Integer> minTicksForWin,
-        Parameter<Integer> furyPillsPerTick, Parameter<Integer> flyingPillsPerTick) {
+        Parameter<Integer> furyPillsPerTick, Parameter<Integer> flyingPillsPerTick, Parameter<Integer> furyPillsMax) {
         this.flyingCount = flyingCount;
         this.furyCount = furyCount;
         this.stoneReduced = stoneReduced;
@@ -94,6 +95,7 @@ public class SnakeBoard implements Field {
         this.minTicksForWin = minTicksForWin;
         this.furyPillsPerTick = furyPillsPerTick;
         this.flyingPillsPerTick = flyingPillsPerTick;
+        this.furyPillsMax = furyPillsMax;
 
         this.dice = dice;
         round = 0;
@@ -167,15 +169,13 @@ public class SnakeBoard implements Field {
                 .orElse(Integer.MAX_VALUE);
 
         aliveActive().forEach(p -> {
-                    if (p.getHero().size() == max
-                        && roundTimer.time() > minTicksForWin.getValue())
-                    {
-                        p.event(Events.WIN.apply(max, roundTimer.countdown()));
-                    } else {
-                        p.printMessage("Time is over");
-                    }
-                });
-
+            if (p.getHero().size() == max && roundTimer.time() > minTicksForWin.getValue())
+            {
+                p.event(Events.WIN.apply(max, roundTimer.countdown()));
+            } else {
+                p.printMessage("Time is over");
+            }
+        });
         aliveActive().forEach(player -> reset(player));
     }
 
@@ -200,7 +200,7 @@ public class SnakeBoard implements Field {
     private void setNewObjects() {
         int max = (players.size() / 2) + 1;
         int i = dice.next(50);
-        if (furyPills.size() < furyPillsPerTick.getValue() && furyPills.size() < max)
+        if (furyPills.size() < furyPillsPerTick.getValue() && furyPills.size() < furyPillsMax.getValue())
             setFuryPill(getFreeRandom());
         if (flyingPills.size() < flyingPillsPerTick.getValue() && flyingPills.size() < max)
             setFlyingPill(getFreeRandom());
